@@ -76,6 +76,7 @@ Ngawi requires semicolons.
 
 Supported statements:
 
+- top-level import directive: `import "file.ngawi";`
 - variable declaration (`let`, `const`)
 - assignment
 - compound assignment (`+=`, `-=`, `*=`, `/=`, `%=`)
@@ -216,7 +217,17 @@ Not implemented yet:
 - classes
 - optimizer passes
 
-## 12. Example program
+## 12. Imports
+
+Import behavior in current MVP:
+
+- import is a top-level directive
+- import path must end with `.ngawi`
+- path resolves relative to the importing file
+- repeated imports are loaded once
+- circular imports fail with an error
+
+## 13. Example program
 
 ```ngawi
 fn fact(n: amba) -> amba {

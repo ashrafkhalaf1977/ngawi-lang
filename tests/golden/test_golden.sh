@@ -24,6 +24,7 @@ cases=(
   "elif:examples/elif.ngawi"
   "match:examples/match.ngawi"
   "string_builtins:examples/string_builtins.ngawi"
+  "import_main:examples/import_main.ngawi"
 )
 
 for entry in "${cases[@]}"; do

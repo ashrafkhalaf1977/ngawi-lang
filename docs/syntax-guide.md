@@ -2,6 +2,14 @@
 
 This page describes the current Ngawi syntax.
 
+## Import
+
+```ngawi
+import "math.ngawi";
+```
+
+Import path is resolved relative to the current file.
+
 ## Function
 
 ```ngawi

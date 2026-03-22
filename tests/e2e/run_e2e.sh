@@ -38,5 +38,6 @@ run_case examples/string_concat.ngawi e2e_string_concat "ngawi"
 run_case examples/elif.ngawi e2e_elif "two"
 run_case examples/match.ngawi e2e_match "two"
 run_case examples/string_builtins.ngawi e2e_string_builtins "true true ngawilang"
+run_case examples/import_main.ngawi e2e_import "7"
 
 echo "All e2e tests passed"
