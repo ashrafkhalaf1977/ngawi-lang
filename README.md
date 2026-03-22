@@ -1,10 +1,15 @@
 # Ngawi Language
 
-Ngawi targets one goal: write with short syntax and ship native binaries.
+Ngawi is an experimental programming language project. It targets short syntax with native output.
 
-## Status
+## Project Status
 
-Compiler pipeline in repo:
+Stage: experimental.
+
+You can build and run real programs, but language design, diagnostics, and code generation can still change between commits.
+Do not treat current output as production stable.
+
+Compiler pipeline in this repository:
 
 - Source `.ngawi`
 - Lexer
