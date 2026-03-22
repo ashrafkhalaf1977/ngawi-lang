@@ -599,6 +599,40 @@ static void check_stmt(Sema *s, Stmt *st) {
       break;
     }
 
+    case STMT_MATCH: {
+      TypeKind stype = check_expr(s, st->as.match_stmt.subject);
+      if (stype != TYPE_VOID && !type_eq(stype, TYPE_INT)) {
+        sema_error(s, st->line, st->col, "match subject must be int, got '%s'",
+                   type_kind_name(stype));
+      }
+
+      int wildcard_count = 0;
+      for (size_t i = 0; i < st->as.match_stmt.arm_count; i++) {
+        MatchArm *arm = &st->as.match_stmt.arms[i];
+
+        if (arm->is_wildcard) {
+          wildcard_count++;
+          if (wildcard_count > 1) {
+            sema_error(s, arm->line, arm->col, "match allows only one wildcard '_' arm");
+          }
+        } else {
+          for (size_t j = 0; j < i; j++) {
+            MatchArm *prev = &st->as.match_stmt.arms[j];
+            if (!prev->is_wildcard && prev->int_value == arm->int_value) {
+              sema_error(s, arm->line, arm->col, "duplicate match arm value '%lld'",
+                         (long long)arm->int_value);
+              break;
+            }
+          }
+        }
+
+        push_scope(s);
+        check_stmt(s, arm->body);
+        pop_scope(s);
+      }
+      break;
+    }
+
     case STMT_BREAK:
       if (s->loop_depth <= 0) {
         sema_error(s, st->line, st->col, "'break' can only be used inside a loop");

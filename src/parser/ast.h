@@ -64,9 +64,18 @@ typedef enum StmtKind {
   STMT_IF,
   STMT_WHILE,
   STMT_FOR,
+  STMT_MATCH,
   STMT_BREAK,
   STMT_CONTINUE,
 } StmtKind;
+
+typedef struct MatchArm {
+  int is_wildcard;
+  int64_t int_value;
+  int line;
+  int col;
+  Stmt *body;
+} MatchArm;
 
 struct Stmt {
   StmtKind kind;
@@ -109,6 +118,11 @@ struct Stmt {
       Stmt *update;
       Stmt *body;
     } for_stmt;
+    struct {
+      Expr *subject;
+      MatchArm *arms;
+      size_t arm_count;
+    } match_stmt;
   } as;
 };
 

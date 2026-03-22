@@ -21,7 +21,7 @@ Core keywords:
 - `fn`
 - `return`
 - `if`, `elif`, `else`
-- `while`, `for`
+- `while`, `for`, `match`
 - `break`, `continue`
 - `let`, `const`
 - `true`, `false`
@@ -84,6 +84,7 @@ Supported statements:
 - `if / elif / else`
 - `while`
 - `for`
+- `match`
 - `break`
 - `continue`
 - block `{ ... }`
@@ -154,6 +155,24 @@ while (i < 10) {
 ```
 
 `break` and `continue` are valid only inside loops.
+
+## 8.3 match
+
+Current `match` MVP supports `int` subjects and integer literal arms.
+
+```ngawi
+match x {
+  0 => { print("zero"); }
+  1 => { print("one"); }
+  _ => { print("other"); }
+}
+```
+
+Rules:
+
+- `match` subject must be `int`
+- `_` is wildcard arm
+- duplicate literal arms are rejected by sema
 
 ## 9. Builtins
 

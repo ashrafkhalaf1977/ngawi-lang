@@ -130,6 +130,29 @@ static void test_elif_keyword(void) {
   }
 }
 
+static void test_match_tokens(void) {
+  const char *src = "match x { 0 => { } _ => { } }";
+  Lexer lx;
+  lexer_init(&lx, "match.ngawi", src);
+
+  Token t;
+  int seen_match = 0, seen_fat_arrow = 0;
+  do {
+    t = lexer_next(&lx);
+    if (t.kind == TOK_KW_MATCH) seen_match = 1;
+    if (t.kind == TOK_FAT_ARROW) seen_fat_arrow = 1;
+  } while (t.kind != TOK_EOF);
+
+  if (!seen_match) {
+    fprintf(stderr, "FAIL keyword token: match not recognized\n");
+    failures++;
+  }
+  if (!seen_fat_arrow) {
+    fprintf(stderr, "FAIL operator token: => not recognized\n");
+    failures++;
+  }
+}
+
 static void test_loop_control_keywords(void) {
   const char *src = "break; continue;";
   Lexer lx;
@@ -243,6 +266,7 @@ int main(void) {
   test_alias_type_keywords();
   test_alias_decl_keywords();
   test_elif_keyword();
+  test_match_tokens();
   test_loop_control_keywords();
   test_percent_token();
   test_compound_assign_tokens();

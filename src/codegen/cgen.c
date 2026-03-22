@@ -332,6 +332,41 @@ static void emit_stmt(CGen *g, Stmt *st) {
       emit_stmt(g, st->as.for_stmt.body);
       break;
 
+    case STMT_MATCH:
+      emit_indent(g);
+      emit(g, "switch (");
+      emit_expr(g, st->as.match_stmt.subject);
+      emit(g, ")\n");
+      emit_indent(g);
+      emit(g, "{\n");
+      g->indent++;
+      for (size_t i = 0; i < st->as.match_stmt.arm_count; i++) {
+        MatchArm *arm = &st->as.match_stmt.arms[i];
+        emit_indent(g);
+        if (arm->is_wildcard) {
+          emit(g, "default:\n");
+        } else {
+          emitf(g, "case %lld:\n", (long long)arm->int_value);
+        }
+
+        emit_indent(g);
+        emit(g, "{\n");
+        g->indent++;
+        emit_stmt(g, arm->body);
+        if (arm->body->kind != STMT_RETURN && arm->body->kind != STMT_BREAK &&
+            arm->body->kind != STMT_CONTINUE) {
+          emit_indent(g);
+          emit(g, "break;\n");
+        }
+        g->indent--;
+        emit_indent(g);
+        emit(g, "}\n");
+      }
+      g->indent--;
+      emit_indent(g);
+      emit(g, "}\n");
+      break;
+
     case STMT_BREAK:
       emit_indent(g);
       emit(g, "break;\n");

@@ -46,6 +46,16 @@ while (x < 10) {
 }
 ```
 
+### match
+
+```ngawi
+match x {
+  0 => { print("zero"); }
+  1 => { print("one"); }
+  _ => { print("other"); }
+}
+```
+
 ### for
 
 ```ngawi

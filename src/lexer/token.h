@@ -21,6 +21,7 @@ typedef enum TokenKind {
   TOK_KW_ELSE,
   TOK_KW_WHILE,
   TOK_KW_FOR,
+  TOK_KW_MATCH,
   TOK_KW_BREAK,
   TOK_KW_CONTINUE,
   TOK_KW_TRUE,
@@ -59,6 +60,7 @@ typedef enum TokenKind {
   TOK_AND_AND,
   TOK_OR_OR,
   TOK_ARROW,
+  TOK_FAT_ARROW,
 
   TOK_LPAREN,
   TOK_RPAREN,

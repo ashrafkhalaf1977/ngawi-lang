@@ -80,6 +80,7 @@ static TokenKind keyword_kind(const char *s, size_t n) {
   if (n == 4 && strncmp(s, "crot", 4) == 0) return TOK_KW_CONST;
   if (n == 5 && strncmp(s, "while", 5) == 0) return TOK_KW_WHILE;
   if (n == 3 && strncmp(s, "for", 3) == 0) return TOK_KW_FOR;
+  if (n == 5 && strncmp(s, "match", 5) == 0) return TOK_KW_MATCH;
   if (n == 5 && strncmp(s, "break", 5) == 0) return TOK_KW_BREAK;
   if (n == 8 && strncmp(s, "continue", 8) == 0) return TOK_KW_CONTINUE;
   if (n == 5 && strncmp(s, "false", 5) == 0) return TOK_KW_FALSE;
@@ -187,6 +188,7 @@ Token lexer_next(Lexer *lx) {
     case '=':
       advance(lx);
       if (match(lx, '=')) return make_token(lx, TOK_EQ, start, line, col);
+      if (match(lx, '>')) return make_token(lx, TOK_FAT_ARROW, start, line, col);
       return make_token(lx, TOK_ASSIGN, start, line, col);
     case '<':
       advance(lx);
@@ -234,6 +236,7 @@ const char *token_kind_name(TokenKind kind) {
     case TOK_KW_ELSE: return "KW_ELSE";
     case TOK_KW_WHILE: return "KW_WHILE";
     case TOK_KW_FOR: return "KW_FOR";
+    case TOK_KW_MATCH: return "KW_MATCH";
     case TOK_KW_BREAK: return "KW_BREAK";
     case TOK_KW_CONTINUE: return "KW_CONTINUE";
     case TOK_KW_TRUE: return "KW_TRUE";
@@ -270,6 +273,7 @@ const char *token_kind_name(TokenKind kind) {
     case TOK_AND_AND: return "AND_AND";
     case TOK_OR_OR: return "OR_OR";
     case TOK_ARROW: return "ARROW";
+    case TOK_FAT_ARROW: return "FAT_ARROW";
     case TOK_LPAREN: return "LPAREN";
     case TOK_RPAREN: return "RPAREN";
     case TOK_LBRACE: return "LBRACE";

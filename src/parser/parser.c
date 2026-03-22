@@ -82,8 +82,8 @@ static void synchronize(Parser *p) {
 
     if (check(p, TOK_RBRACE) || check(p, TOK_KW_FN) || check(p, TOK_KW_LET) ||
         check(p, TOK_KW_CONST) || check(p, TOK_KW_IF) || check(p, TOK_KW_ELIF) ||
-        check(p, TOK_KW_WHILE) || check(p, TOK_KW_FOR) || check(p, TOK_KW_BREAK) ||
-        check(p, TOK_KW_CONTINUE) || check(p, TOK_KW_RETURN)) {
+        check(p, TOK_KW_WHILE) || check(p, TOK_KW_FOR) || check(p, TOK_KW_MATCH) ||
+        check(p, TOK_KW_BREAK) || check(p, TOK_KW_CONTINUE) || check(p, TOK_KW_RETURN)) {
       return;
     }
 
@@ -547,6 +547,54 @@ static Stmt *parse_for(Parser *p) {
   return s;
 }
 
+static int token_is_wildcard_ident(Token t) {
+  return t.kind == TOK_IDENT && t.length == 1 && t.start[0] == '_';
+}
+
+static Stmt *parse_match(Parser *p) {
+  Token kw = consume(p, TOK_KW_MATCH, "expected 'match'");
+  Expr *subject = parse_expression(p);
+  consume(p, TOK_LBRACE, "expected '{' after match subject");
+
+  MatchArm *arms = NULL;
+  size_t arm_count = 0;
+
+  while (!check(p, TOK_RBRACE) && !check(p, TOK_EOF)) {
+    MatchArm arm;
+    memset(&arm, 0, sizeof(arm));
+    arm.line = p->cur.line;
+    arm.col = p->cur.col;
+
+    if (token_is_wildcard_ident(p->cur)) {
+      arm.is_wildcard = 1;
+      advance(p);
+    } else if (check(p, TOK_INT_LIT)) {
+      Token lit = p->cur;
+      char *tmp = dup_lexeme(&lit);
+      arm.int_value = strtoll(tmp, NULL, 10);
+      free(tmp);
+      advance(p);
+    } else {
+      parse_error(p, "expected int literal or '_' in match arm");
+      break;
+    }
+
+    consume(p, TOK_FAT_ARROW, "expected '=>' after match arm pattern");
+    arm.body = parse_statement(p);
+
+    arms = (MatchArm *)xrealloc(arms, arm_count + 1, sizeof(MatchArm));
+    arms[arm_count++] = arm;
+  }
+
+  consume(p, TOK_RBRACE, "expected '}' after match arms");
+
+  Stmt *s = new_stmt(STMT_MATCH, kw.line, kw.col);
+  s->as.match_stmt.subject = subject;
+  s->as.match_stmt.arms = arms;
+  s->as.match_stmt.arm_count = arm_count;
+  return s;
+}
+
 static Stmt *parse_statement(Parser *p) {
   if (check(p, TOK_LBRACE)) return parse_block(p);
   if (check(p, TOK_KW_IF)) return parse_if(p);
@@ -557,6 +605,7 @@ static Stmt *parse_statement(Parser *p) {
   }
   if (check(p, TOK_KW_WHILE)) return parse_while(p);
   if (check(p, TOK_KW_FOR)) return parse_for(p);
+  if (check(p, TOK_KW_MATCH)) return parse_match(p);
 
   if (check(p, TOK_KW_LET) || check(p, TOK_KW_CONST)) {
     int is_const = check(p, TOK_KW_CONST);
@@ -740,6 +789,13 @@ static void stmt_free(Stmt *s) {
       expr_free(s->as.for_stmt.cond);
       stmt_free(s->as.for_stmt.update);
       stmt_free(s->as.for_stmt.body);
+      break;
+    case STMT_MATCH:
+      expr_free(s->as.match_stmt.subject);
+      for (size_t i = 0; i < s->as.match_stmt.arm_count; i++) {
+        stmt_free(s->as.match_stmt.arms[i].body);
+      }
+      free(s->as.match_stmt.arms);
       break;
     case STMT_BREAK:
     case STMT_CONTINUE:

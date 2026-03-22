@@ -265,6 +265,43 @@ static void test_len_builtin(void) {
   expect(run_program("len_bad.ngawi", bad_src, 1) != 0, "len on non-string should fail");
 }
 
+static void test_match_rules(void) {
+  const char *ok_src =
+      "fn main() -> int {\n"
+      "  let x: int = 2;\n"
+      "  match x {\n"
+      "    0 => { print(\"zero\"); }\n"
+      "    2 => { print(\"two\"); }\n"
+      "    _ => { print(\"other\"); }\n"
+      "  }\n"
+      "  return 0;\n"
+      "}\n";
+
+  const char *dup_src =
+      "fn main() -> int {\n"
+      "  let x: int = 1;\n"
+      "  match x {\n"
+      "    1 => { print(\"a\"); }\n"
+      "    1 => { print(\"b\"); }\n"
+      "  }\n"
+      "  return 0;\n"
+      "}\n";
+
+  const char *bad_type_src =
+      "fn main() -> int {\n"
+      "  let s: string = \"x\";\n"
+      "  match s {\n"
+      "    _ => { print(\"other\"); }\n"
+      "  }\n"
+      "  return 0;\n"
+      "}\n";
+
+  expect(run_program("match_ok.ngawi", ok_src, 0) == 0, "valid match should pass");
+  expect(run_program("match_dup.ngawi", dup_src, 1) != 0, "duplicate match arm should fail");
+  expect(run_program("match_bad_type.ngawi", bad_type_src, 1) != 0,
+         "non-int match subject should fail");
+}
+
 static void test_missing_main(void) {
   const char *src =
       "fn nope() -> int {\n"
@@ -284,6 +321,7 @@ int main(void) {
   test_string_equality();
   test_string_concat();
   test_len_builtin();
+  test_match_rules();
   test_break_continue_scope();
   test_missing_main();
 
