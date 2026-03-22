@@ -50,6 +50,7 @@ Current string allocation model (MVP):
 
 - `src/main.c`
   - CLI handling
+  - import graph loading (top-level `import` with cycle detection)
   - parse + sema + codegen orchestration
   - GCC invocation
 

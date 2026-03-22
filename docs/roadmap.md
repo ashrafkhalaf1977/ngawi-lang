@@ -4,8 +4,8 @@ This roadmap tracks near-term language work.
 
 ## Next up
 
-- cleaner diagnostics wording across parser and sema
-- better parser recovery around nested blocks
+- runtime string memory strategy beyond raw `malloc` in helpers
+- `match` expansion to `bool` and `string`
 - basic standard library growth
 
 ## Planned language features

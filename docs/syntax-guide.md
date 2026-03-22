@@ -8,7 +8,13 @@ This page describes the current Ngawi syntax.
 import "math.ngawi";
 ```
 
-Import path is resolved relative to the current file.
+Import rules (current MVP):
+
+- import is top-level only
+- path is resolved relative to the current file
+- path must end with `.ngawi`
+- duplicate imports are loaded once
+- circular imports fail with an error
 
 ## Function
 
