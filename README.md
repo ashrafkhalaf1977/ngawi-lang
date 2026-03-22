@@ -81,9 +81,16 @@ Cast builtin aliases:
 - `to_int(x)` or `to_amba(x)`
 - `to_float(x)` or `to_rusdi(x)`
 
-## Specification
+## Documentation
 
-See `docs/language-spec.md` for the current language spec.
+- Docs index: `docs/README.md`
+- Getting started: `docs/getting-started.md`
+- Syntax guide: `docs/syntax-guide.md`
+- Language specification: `docs/language-spec.md`
+- Compiler architecture: `docs/compiler-architecture.md`
+- Testing guide: `docs/testing.md`
+- Contributing guide: `docs/contributing.md`
+- Roadmap: `docs/roadmap.md`
 
 ## Example
 

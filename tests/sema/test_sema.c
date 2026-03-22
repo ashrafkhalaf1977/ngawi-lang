@@ -1,4 +1,6 @@
+#include <fcntl.h>
 #include <stdio.h>
+#include <unistd.h>
 
 #include "../../src/parser/parser.h"
 #include "../../src/sema/sema.h"
@@ -12,15 +14,50 @@ static void expect(int cond, const char *msg) {
   }
 }
 
-static int run_program(const char *name, const char *src) {
+static int silence_stderr_begin(int *saved_fd) {
+  fflush(stderr);
+  *saved_fd = dup(STDERR_FILENO);
+  if (*saved_fd < 0) return 0;
+
+  int devnull = open("/dev/null", O_WRONLY);
+  if (devnull < 0) {
+    close(*saved_fd);
+    return 0;
+  }
+
+  if (dup2(devnull, STDERR_FILENO) < 0) {
+    close(devnull);
+    close(*saved_fd);
+    return 0;
+  }
+
+  close(devnull);
+  return 1;
+}
+
+static void silence_stderr_end(int saved_fd) {
+  fflush(stderr);
+  (void)dup2(saved_fd, STDERR_FILENO);
+  close(saved_fd);
+}
+
+static int run_program(const char *name, const char *src, int quiet_stderr) {
+  int saved_fd = -1;
+  int silenced = 0;
+  if (quiet_stderr) silenced = silence_stderr_begin(&saved_fd);
+
   int parse_err = 0;
   Program *p = parse_program(name, src, &parse_err);
   if (parse_err) {
+    if (silenced) silence_stderr_end(saved_fd);
     program_free(p);
     return 1;
   }
+
   int sema_err = sema_check_program(name, src, p);
   program_free(p);
+
+  if (silenced) silence_stderr_end(saved_fd);
   return sema_err;
 }
 
@@ -34,7 +71,7 @@ static void test_valid_program(void) {
       "  print(x);\n"
       "  return 0;\n"
       "}\n";
-  expect(run_program("ok.ngawi", src) == 0, "valid program should pass sema");
+  expect(run_program("ok.ngawi", src, 0) == 0, "valid program should pass sema");
 }
 
 static void test_type_mismatch(void) {
@@ -44,7 +81,7 @@ static void test_type_mismatch(void) {
       "  x = \"oops\";\n"
       "  return 0;\n"
       "}\n";
-  expect(run_program("type_mismatch.ngawi", src) != 0,
+  expect(run_program("type_mismatch.ngawi", src, 1) != 0,
          "assignment type mismatch should fail sema");
 }
 
@@ -66,9 +103,9 @@ static void test_break_continue_scope(void) {
       "  return 0;\n"
       "}\n";
 
-  expect(run_program("loop_ctrl_ok.ngawi", ok_src) == 0,
+  expect(run_program("loop_ctrl_ok.ngawi", ok_src, 0) == 0,
          "break/continue inside loop should pass");
-  expect(run_program("loop_ctrl_bad.ngawi", bad_src) != 0,
+  expect(run_program("loop_ctrl_bad.ngawi", bad_src, 1) != 0,
          "break outside loop should fail");
 }
 
@@ -87,8 +124,8 @@ static void test_modulo_type_rules(void) {
       "  return 0;\n"
       "}\n";
 
-  expect(run_program("mod_ok.ngawi", ok_src) == 0, "int modulo should pass");
-  expect(run_program("mod_bad.ngawi", bad_src) != 0, "float modulo should fail");
+  expect(run_program("mod_ok.ngawi", ok_src, 0) == 0, "int modulo should pass");
+  expect(run_program("mod_bad.ngawi", bad_src, 1) != 0, "float modulo should fail");
 }
 
 static void test_builtin_casts(void) {
@@ -110,8 +147,8 @@ static void test_builtin_casts(void) {
       "  return 0;\n"
       "}\n";
 
-  expect(run_program("cast_ok.ngawi", ok_src) == 0, "valid casts should pass");
-  expect(run_program("cast_bad.ngawi", bad_src) != 0, "invalid cast arg should fail");
+  expect(run_program("cast_ok.ngawi", ok_src, 0) == 0, "valid casts should pass");
+  expect(run_program("cast_bad.ngawi", bad_src, 1) != 0, "invalid cast arg should fail");
 }
 
 static void test_compound_assign_rules(void) {
@@ -133,8 +170,9 @@ static void test_compound_assign_rules(void) {
       "  return 0;\n"
       "}\n";
 
-  expect(run_program("compound_ok.ngawi", ok_src) == 0, "valid compound assignments should pass");
-  expect(run_program("compound_bad.ngawi", bad_src) != 0,
+  expect(run_program("compound_ok.ngawi", ok_src, 0) == 0,
+         "valid compound assignments should pass");
+  expect(run_program("compound_bad.ngawi", bad_src, 1) != 0,
          "invalid compound assignment should fail");
 }
 
@@ -156,8 +194,8 @@ static void test_string_equality(void) {
       "  return 0;\n"
       "}\n";
 
-  expect(run_program("str_eq_ok.ngawi", ok_src) == 0, "string equality should pass");
-  expect(run_program("str_eq_bad.ngawi", bad_src) != 0, "mixed equality should fail");
+  expect(run_program("str_eq_ok.ngawi", ok_src, 0) == 0, "string equality should pass");
+  expect(run_program("str_eq_bad.ngawi", bad_src, 1) != 0, "mixed equality should fail");
 }
 
 static void test_missing_main(void) {
@@ -165,7 +203,7 @@ static void test_missing_main(void) {
       "fn nope() -> int {\n"
       "  return 0;\n"
       "}\n";
-  expect(run_program("missing_main.ngawi", src) != 0,
+  expect(run_program("missing_main.ngawi", src, 1) != 0,
          "missing main should fail sema");
 }
 

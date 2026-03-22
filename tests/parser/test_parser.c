@@ -1,4 +1,6 @@
+#include <fcntl.h>
 #include <stdio.h>
+#include <unistd.h>
 
 #include "../../src/parser/parser.h"
 
@@ -9,6 +11,47 @@ static void expect(int cond, const char *msg) {
     fprintf(stderr, "FAIL: %s\n", msg);
     failures++;
   }
+}
+
+static int silence_stderr_begin(int *saved_fd) {
+  fflush(stderr);
+  *saved_fd = dup(STDERR_FILENO);
+  if (*saved_fd < 0) return 0;
+
+  int devnull = open("/dev/null", O_WRONLY);
+  if (devnull < 0) {
+    close(*saved_fd);
+    return 0;
+  }
+
+  if (dup2(devnull, STDERR_FILENO) < 0) {
+    close(devnull);
+    close(*saved_fd);
+    return 0;
+  }
+
+  close(devnull);
+  return 1;
+}
+
+static void silence_stderr_end(int saved_fd) {
+  fflush(stderr);
+  (void)dup2(saved_fd, STDERR_FILENO);
+  close(saved_fd);
+}
+
+static Program *parse_program_maybe_quiet(const char *name,
+                                          const char *src,
+                                          int *had_error,
+                                          int quiet_stderr) {
+  int saved_fd = -1;
+  int silenced = 0;
+  if (quiet_stderr) silenced = silence_stderr_begin(&saved_fd);
+
+  Program *p = parse_program(name, src, had_error);
+
+  if (silenced) silence_stderr_end(saved_fd);
+  return p;
 }
 
 static void test_parse_main(void) {
@@ -33,7 +76,7 @@ static void test_parse_main(void) {
 static void test_parse_error(void) {
   const char *src = "fn main() -> int { let x = 1 return 0; }";
   int had_error = 0;
-  Program *p = parse_program("bad.ngawi", src, &had_error);
+  Program *p = parse_program_maybe_quiet("bad.ngawi", src, &had_error, 1);
   expect(had_error != 0, "parse should fail on missing semicolon");
   program_free(p);
 }
@@ -116,7 +159,7 @@ static void test_parse_recovery_keeps_following_functions(void) {
       "}\n";
 
   int had_error = 0;
-  Program *p = parse_program("recover.ngawi", src, &had_error);
+  Program *p = parse_program_maybe_quiet("recover.ngawi", src, &had_error, 1);
   expect(had_error != 0, "recovery test should still report parse error");
   expect(p != NULL, "program not null in recovery test");
   expect(p->func_count == 2, "parser should continue and parse following function");
