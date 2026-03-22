@@ -80,6 +80,7 @@ Supported statements:
 - variable declaration (`let`, `const`)
 - assignment
 - compound assignment (`+=`, `-=`, `*=`, `/=`, `%=`)
+- postfix increment/decrement (`x++;`, `x--;`)
 - expression statement
 - `return`
 - `if / elif / else`
@@ -105,6 +106,7 @@ Operators:
 - comparison: `== != < <= > >=`
 - logical: `&& || !`
 - assignment: `=` plus compound assignment
+- postfix: `++ --` (statement form)
 
 Operator notes:
 
@@ -171,7 +173,7 @@ match x {
 
 Rules:
 
-- `match` subject must be `int`
+- `match` subject must be `int` in current MVP
 - `_` is wildcard arm
 - duplicate literal arms are rejected by sema
 
@@ -188,6 +190,7 @@ Rules:
 
 ### 9.3 string helpers
 
+- `len(s) -> int`
 - `contains(s, sub) -> bool`
 - `starts_with(s, prefix) -> bool`
 - `to_lower(s) -> string`
@@ -212,7 +215,6 @@ Not implemented yet:
 
 - arrays
 - structs
-- modules/imports
 - generics
 - classes
 - optimizer passes

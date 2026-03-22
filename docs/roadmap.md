@@ -12,7 +12,7 @@ This roadmap tracks near-term language work.
 
 - arrays
 - structs
-- modules/imports
+- `match` expansion to `bool` and `string`
 - optional semicolon mode (evaluation)
 
 ## Longer term

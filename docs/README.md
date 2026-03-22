@@ -8,6 +8,8 @@ This folder contains project documentation for users and contributors.
 - [Syntax Guide](syntax-guide.md)
 - [Language Specification](language-spec.md)
 
+If you need exact language behavior, read the specification first.
+
 ## Compiler and development
 
 - [Compiler Architecture](compiler-architecture.md)

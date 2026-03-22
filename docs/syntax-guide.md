@@ -64,6 +64,8 @@ match x {
 }
 ```
 
+Current MVP supports `int` subject only.
+
 ### for
 
 ```ngawi
@@ -80,6 +82,13 @@ while (true) {
   if (x == 8) { break; }
   x += 1;
 }
+```
+
+### increment / decrement
+
+```ngawi
+i++;
+i--;
 ```
 
 ## Operators
@@ -115,6 +124,7 @@ let d: rusdi = to_rusdi(7);
 
 ```ngawi
 let s: string = "NgawiLang";
+let n: int = len(s);
 let c: bool = contains(s, "Lang");
 let p: bool = starts_with(s, "Nga");
 let low: string = to_lower(s);
