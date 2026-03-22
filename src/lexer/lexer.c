@@ -158,12 +158,14 @@ Token lexer_next(Lexer *lx) {
     case '"': return lex_string(lx, start, line, col);
     case '+':
       advance(lx);
+      if (match(lx, '+')) return make_token(lx, TOK_PLUS_PLUS, start, line, col);
       if (match(lx, '=')) return make_token(lx, TOK_PLUS_ASSIGN, start, line, col);
       return make_token(lx, TOK_PLUS, start, line, col);
     case '-':
       advance(lx);
       if (match(lx, '>')) return make_token(lx, TOK_ARROW, start, line, col);
       if (match(lx, '=')) return make_token(lx, TOK_MINUS_ASSIGN, start, line, col);
+      if (match(lx, '-')) return make_token(lx, TOK_MINUS_MINUS, start, line, col);
       return make_token(lx, TOK_MINUS, start, line, col);
     case '*':
       advance(lx);
@@ -244,7 +246,9 @@ const char *token_kind_name(TokenKind kind) {
     case TOK_KW_FUAD: return "KW_FUAD";
     case TOK_KW_IMUT: return "KW_IMUT";
     case TOK_PLUS: return "PLUS";
+    case TOK_PLUS_PLUS: return "PLUS_PLUS";
     case TOK_MINUS: return "MINUS";
+    case TOK_MINUS_MINUS: return "MINUS_MINUS";
     case TOK_STAR: return "STAR";
     case TOK_SLASH: return "SLASH";
     case TOK_PERCENT: return "PERCENT";

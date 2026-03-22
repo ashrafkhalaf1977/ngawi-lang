@@ -133,6 +133,8 @@ static int is_assign_op(TokenKind k) {
          k == TOK_STAR_ASSIGN || k == TOK_SLASH_ASSIGN || k == TOK_PERCENT_ASSIGN;
 }
 
+static int is_incdec_op(TokenKind k) { return k == TOK_PLUS_PLUS || k == TOK_MINUS_MINUS; }
+
 static int compound_assign_to_binary_op(TokenKind assign_op) {
   switch (assign_op) {
     case TOK_PLUS_ASSIGN: return TOK_PLUS;
@@ -192,6 +194,30 @@ static Stmt *make_assignment_stmt(Parser *p, Token name_tok, TokenKind assign_op
   Stmt *s = new_stmt(STMT_ASSIGN, name_tok.line, name_tok.col);
   s->as.assign.name = dup_lexeme(&name_tok);
   s->as.assign.value = rhs;
+  return s;
+}
+
+static Stmt *make_incdec_stmt(Parser *p, Token name_tok, TokenKind op_kind, int with_semicolon) {
+  advance(p);  // consume identifier
+  Token op_tok = p->cur;
+  advance(p);  // consume ++ or --
+
+  if (with_semicolon) consume(p, TOK_SEMI, "expected ';' after increment/decrement");
+
+  Expr *lhs_ident = new_expr(EXPR_IDENT, name_tok.line, name_tok.col);
+  lhs_ident->as.ident_name = dup_lexeme(&name_tok);
+
+  Expr *rhs_one = new_expr(EXPR_INT, op_tok.line, op_tok.col);
+  rhs_one->as.int_val = 1;
+
+  Expr *bin = new_expr(EXPR_BINARY, op_tok.line, op_tok.col);
+  bin->as.binary.op = (op_kind == TOK_PLUS_PLUS) ? TOK_PLUS : TOK_MINUS;
+  bin->as.binary.left = lhs_ident;
+  bin->as.binary.right = rhs_one;
+
+  Stmt *s = new_stmt(STMT_ASSIGN, name_tok.line, name_tok.col);
+  s->as.assign.name = dup_lexeme(&name_tok);
+  s->as.assign.value = bin;
   return s;
 }
 
@@ -453,6 +479,12 @@ static Stmt *parse_for_clause_stmt(Parser *p, int with_semicolon) {
     return make_assignment_stmt(p, name, assign_op, with_semicolon);
   }
 
+  if (check(p, TOK_IDENT) && is_incdec_op(p->next.kind)) {
+    Token name = p->cur;
+    TokenKind op_kind = p->next.kind;
+    return make_incdec_stmt(p, name, op_kind, with_semicolon);
+  }
+
   Token t = p->cur;
   Expr *e = parse_expression(p);
   if (with_semicolon) consume(p, TOK_SEMI, "expected ';' after expression");
@@ -553,6 +585,12 @@ static Stmt *parse_statement(Parser *p) {
     Token name = p->cur;
     TokenKind assign_op = p->next.kind;
     return make_assignment_stmt(p, name, assign_op, 1);
+  }
+
+  if (check(p, TOK_IDENT) && is_incdec_op(p->next.kind)) {
+    Token name = p->cur;
+    TokenKind op_kind = p->next.kind;
+    return make_incdec_stmt(p, name, op_kind, 1);
   }
 
   Token t = p->cur;

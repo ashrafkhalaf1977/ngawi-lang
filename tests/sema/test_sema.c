@@ -176,6 +176,30 @@ static void test_compound_assign_rules(void) {
          "invalid compound assignment should fail");
 }
 
+static void test_incdec_rules(void) {
+  const char *ok_src =
+      "fn main() -> int {\n"
+      "  let i: int = 0;\n"
+      "  i++;\n"
+      "  i--;\n"
+      "  for (let j: int = 0; j < 3; j++) {\n"
+      "    i += j;\n"
+      "  }\n"
+      "  return i;\n"
+      "}\n";
+
+  const char *bad_src =
+      "fn main() -> int {\n"
+      "  let s: string = \"x\";\n"
+      "  s++;\n"
+      "  return 0;\n"
+      "}\n";
+
+  expect(run_program("incdec_ok.ngawi", ok_src, 0) == 0, "inc/dec on int should pass");
+  expect(run_program("incdec_bad.ngawi", bad_src, 1) != 0,
+         "inc/dec on non-numeric should fail");
+}
+
 static void test_string_equality(void) {
   const char *ok_src =
       "fn main() -> int {\n"
@@ -213,6 +237,7 @@ int main(void) {
   test_modulo_type_rules();
   test_builtin_casts();
   test_compound_assign_rules();
+  test_incdec_rules();
   test_string_equality();
   test_break_continue_scope();
   test_missing_main();

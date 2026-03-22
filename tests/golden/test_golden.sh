@@ -18,6 +18,7 @@ cases=(
   "cast:examples/cast.ngawi"
   "string_eq:examples/string_eq.ngawi"
   "compound_assign:examples/compound_assign.ngawi"
+  "incdec:examples/incdec.ngawi"
 )
 
 for entry in "${cases[@]}"; do

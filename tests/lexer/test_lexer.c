@@ -181,9 +181,29 @@ static void test_compound_assign_tokens(void) {
     failures++;
   }
   if (!seen_percent) {
-    fprintf(stderr, "FAIL operator token: %= not recognized\n");
+    fprintf(stderr, "FAIL operator token: %%= not recognized\n");
     failures++;
   }
+}
+
+static void test_incdec_tokens(void) {
+  const char *src = "i++; j--;";
+  Lexer lx;
+  lexer_init(&lx, "incdec.ngawi", src);
+
+  Token t1 = lexer_next(&lx);
+  Token t2 = lexer_next(&lx);
+  Token t3 = lexer_next(&lx);
+  Token t4 = lexer_next(&lx);
+  Token t5 = lexer_next(&lx);
+  Token t6 = lexer_next(&lx);
+
+  expect_kind(t1, TOK_IDENT, "incdec_ident_i");
+  expect_kind(t2, TOK_PLUS_PLUS, "incdec_plus_plus");
+  expect_kind(t3, TOK_SEMI, "incdec_semi_1");
+  expect_kind(t4, TOK_IDENT, "incdec_ident_j");
+  expect_kind(t5, TOK_MINUS_MINUS, "incdec_minus_minus");
+  expect_kind(t6, TOK_SEMI, "incdec_semi_2");
 }
 
 static void test_invalid_token(void) {
@@ -207,6 +227,7 @@ int main(void) {
   test_loop_control_keywords();
   test_percent_token();
   test_compound_assign_tokens();
+  test_incdec_tokens();
   test_invalid_token();
 
   if (failures > 0) {
