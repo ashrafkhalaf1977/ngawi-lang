@@ -5,14 +5,14 @@ This roadmap tracks near-term language work.
 ## Next up
 
 - runtime string memory strategy beyond raw `malloc` in helpers
-- `match` expansion to `string`
+- stricter `match` checks (exhaustiveness and unreachable arms)
 - basic standard library growth
 
 ## Planned language features
 
 - arrays
 - structs
-- `match` expansion to `string`
+- pattern guards for `match` (evaluation)
 - optional semicolon mode (evaluation)
 
 ## Longer term

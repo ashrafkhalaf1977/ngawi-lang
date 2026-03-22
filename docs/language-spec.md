@@ -161,7 +161,7 @@ while (i < 10) {
 
 ## 8.3 match
 
-Current `match` MVP supports `int` and `bool` subjects.
+Current `match` MVP supports `int`, `bool`, and `string` subjects.
 
 ```ngawi
 match x {
@@ -173,9 +173,10 @@ match x {
 
 Rules:
 
-- `match` subject must be `int` or `bool` in current MVP
+- `match` subject must be `int`, `bool`, or `string` in current MVP
 - `int` subjects use int literal arms (`0`, `1`, ...)
 - `bool` subjects use `true` / `false` arms
+- `string` subjects use string literal arms (`"x"`, `"hello"`, ...)
 - `_` is wildcard arm
 - duplicate literal arms are rejected by sema
 

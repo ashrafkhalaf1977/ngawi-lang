@@ -70,7 +70,14 @@ match x {
 }
 ```
 
-Current MVP supports `int` and `bool` subjects.
+Current MVP supports `int`, `bool`, and `string` subjects.
+
+```ngawi
+match name {
+  "ngawi" => { print("ok"); }
+  _ => { print("other"); }
+}
+```
 
 ### for
 
