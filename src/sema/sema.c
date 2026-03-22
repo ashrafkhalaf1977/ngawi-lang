@@ -29,6 +29,9 @@ typedef struct Sema {
   const char *file;
   const char *source;
   int had_error;
+  int error_count;
+  int max_errors;
+  int stop_analysis;
   Scope *scope;
   FuncSymbol *funcs;
   size_t func_count;
@@ -86,6 +89,8 @@ static int edit_distance(const char *a, const char *b) {
   return d;
 }
 
+static int should_stop(Sema *s) { return s->stop_analysis; }
+
 static void sema_error(Sema *s, int line, int col, const char *fmt, ...) {
   char msg[1024];
   va_list args;
@@ -95,9 +100,17 @@ static void sema_error(Sema *s, int line, int col, const char *fmt, ...) {
 
   diag_error_source(s->file, s->source, line, col, "%s", msg);
   s->had_error = 1;
+  s->error_count++;
+
+  if (s->error_count >= s->max_errors && !s->stop_analysis) {
+    diag_error(s->file, line, col, "too many semantic errors (max %d)", s->max_errors);
+    s->stop_analysis = 1;
+  }
 }
 
 static void sema_note(Sema *s, int line, int col, const char *fmt, ...) {
+  if (should_stop(s)) return;
+
   char msg[1024];
   va_list args;
   va_start(args, fmt);
@@ -227,11 +240,15 @@ static TypeKind set_expr_type(Expr *e, TypeKind t) {
 }
 
 static TypeKind check_call(Sema *s, Expr *e) {
+  if (should_stop(s)) return set_expr_type(e, TYPE_VOID);
+
   if (strcmp(e->as.call.name, "print") == 0) {
     for (size_t i = 0; i < e->as.call.arg_count; i++) {
       TypeKind at = check_expr(s, e->as.call.args[i]);
+      if (should_stop(s)) return set_expr_type(e, TYPE_VOID);
       if (at == TYPE_VOID) {
-        sema_error(s, e->line, e->col, "print argument cannot be void");
+        // Skip cascade error. Root error is reported in child expression.
+        continue;
       }
     }
     return set_expr_type(e, TYPE_VOID);
@@ -254,6 +271,8 @@ static TypeKind check_call(Sema *s, Expr *e) {
   for (size_t i = 0; i < e->as.call.arg_count; i++) {
     TypeKind got = check_expr(s, e->as.call.args[i]);
     TypeKind exp = fn->decl->params[i].type;
+    if (should_stop(s)) return set_expr_type(e, fn->decl->return_type);
+    if (got == TYPE_VOID) continue;
     if (!type_eq(got, exp)) {
       sema_error(s, e->as.call.args[i]->line, e->as.call.args[i]->col,
                  "argument %zu of '%s' expects '%s', got '%s'", i + 1,
@@ -265,6 +284,8 @@ static TypeKind check_call(Sema *s, Expr *e) {
 }
 
 static TypeKind check_expr(Sema *s, Expr *e) {
+  if (should_stop(s)) return set_expr_type(e, TYPE_VOID);
+
   switch (e->kind) {
     case EXPR_INT:
       return set_expr_type(e, TYPE_INT);
@@ -288,6 +309,8 @@ static TypeKind check_expr(Sema *s, Expr *e) {
       return check_call(s, e);
     case EXPR_UNARY: {
       TypeKind rhs = check_expr(s, e->as.unary.expr);
+      if (rhs == TYPE_VOID) return set_expr_type(e, TYPE_VOID);
+
       if (e->as.unary.op == TOK_BANG) {
         if (!type_eq(rhs, TYPE_BOOL)) {
           sema_error(s, e->line, e->col, "operator '!' expects bool, got '%s'",
@@ -310,6 +333,8 @@ static TypeKind check_expr(Sema *s, Expr *e) {
       TypeKind lhs = check_expr(s, e->as.binary.left);
       TypeKind rhs = check_expr(s, e->as.binary.right);
       int op = e->as.binary.op;
+
+      if (lhs == TYPE_VOID || rhs == TYPE_VOID) return set_expr_type(e, TYPE_VOID);
 
       if (op == TOK_PLUS || op == TOK_MINUS || op == TOK_STAR || op == TOK_SLASH) {
         if (!type_is_numeric(lhs) || !type_is_numeric(rhs) || !type_eq(lhs, rhs)) {
@@ -378,11 +403,14 @@ static int stmt_guarantees_return(Stmt *st) {
 }
 
 static void check_stmt(Sema *s, Stmt *st) {
+  if (should_stop(s)) return;
+
   switch (st->kind) {
     case STMT_BLOCK:
       push_scope(s);
       for (size_t i = 0; i < st->as.block.count; i++) {
         check_stmt(s, st->as.block.items[i]);
+        if (should_stop(s)) break;
       }
       pop_scope(s);
       break;
@@ -393,7 +421,7 @@ static void check_stmt(Sema *s, Stmt *st) {
       TypeKind final_t = init_t;
       if (st->as.var_decl.has_type) {
         final_t = st->as.var_decl.type;
-        if (!type_eq(final_t, init_t)) {
+        if (init_t != TYPE_VOID && !type_eq(final_t, init_t)) {
           sema_error(s, st->line, st->col,
                      "cannot assign '%s' to variable '%s' of type '%s'",
                      type_kind_name(init_t), st->as.var_decl.name, type_kind_name(final_t));
@@ -425,7 +453,7 @@ static void check_stmt(Sema *s, Stmt *st) {
                    st->as.assign.name);
       }
       TypeKind rhs = check_expr(s, st->as.assign.value);
-      if (!type_eq(v->type, rhs)) {
+      if (rhs != TYPE_VOID && !type_eq(v->type, rhs)) {
         sema_error(s, st->line, st->col,
                    "cannot assign '%s' to variable '%s' of type '%s'", type_kind_name(rhs),
                    st->as.assign.name, type_kind_name(v->type));
@@ -446,7 +474,7 @@ static void check_stmt(Sema *s, Stmt *st) {
         }
       } else {
         TypeKind got = check_expr(s, st->as.ret.expr);
-        if (!type_eq(got, fn_ret)) {
+        if (got != TYPE_VOID && !type_eq(got, fn_ret)) {
           sema_error(s, st->line, st->col, "return type mismatch: expected '%s', got '%s'",
                      type_kind_name(fn_ret), type_kind_name(got));
         }
@@ -456,7 +484,7 @@ static void check_stmt(Sema *s, Stmt *st) {
 
     case STMT_IF: {
       TypeKind ct = check_expr(s, st->as.if_stmt.cond);
-      if (!type_eq(ct, TYPE_BOOL)) {
+      if (ct != TYPE_VOID && !type_eq(ct, TYPE_BOOL)) {
         sema_error(s, st->line, st->col, "if condition must be bool, got '%s'",
                    type_kind_name(ct));
       }
@@ -467,7 +495,7 @@ static void check_stmt(Sema *s, Stmt *st) {
 
     case STMT_WHILE: {
       TypeKind ct = check_expr(s, st->as.while_stmt.cond);
-      if (!type_eq(ct, TYPE_BOOL)) {
+      if (ct != TYPE_VOID && !type_eq(ct, TYPE_BOOL)) {
         sema_error(s, st->line, st->col, "while condition must be bool, got '%s'",
                    type_kind_name(ct));
       }
@@ -520,11 +548,16 @@ int sema_check_program(const char *file, const char *source, Program *prog) {
   memset(&s, 0, sizeof(s));
   s.file = file;
   s.source = source;
+  s.error_count = 0;
+  s.max_errors = 20;
+  s.stop_analysis = 0;
 
   collect_functions(&s, prog);
   check_main_signature(&s);
 
   for (size_t i = 0; i < prog->func_count; i++) {
+    if (should_stop(&s)) break;
+
     FunctionDecl *fn = &prog->funcs[i];
     s.current_fn = fn;
 
@@ -532,11 +565,12 @@ int sema_check_program(const char *file, const char *source, Program *prog) {
     for (size_t p = 0; p < fn->param_count; p++) {
       declare_var(&s, fn->body ? fn->body->line : 1, fn->body ? fn->body->col : 1,
                   fn->params[p].name, fn->params[p].type, 0);
+      if (should_stop(&s)) break;
     }
 
     check_stmt(&s, fn->body);
 
-    if (fn->return_type != TYPE_VOID && !stmt_guarantees_return(fn->body)) {
+    if (!should_stop(&s) && fn->return_type != TYPE_VOID && !stmt_guarantees_return(fn->body)) {
       sema_error(&s, fn->body ? fn->body->line : 1, fn->body ? fn->body->col : 1,
                  "non-void function '%s' may not return on all paths", fn->name);
     }
