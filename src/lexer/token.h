@@ -26,6 +26,10 @@ typedef enum TokenKind {
   TOK_KW_FLOAT,
   TOK_KW_BOOL,
   TOK_KW_STRING,
+  TOK_KW_AMBA,
+  TOK_KW_RUSDI,
+  TOK_KW_FUAD,
+  TOK_KW_IMUT,
 
   TOK_PLUS,
   TOK_MINUS,

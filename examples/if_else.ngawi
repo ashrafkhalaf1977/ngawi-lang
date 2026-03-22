@@ -1,6 +1,7 @@
-fn main() -> int {
-  let n: int = 7;
-  if (n > 5) {
+fn main() -> amba {
+  let score: rusdi = 7.0;
+  let ok: fuad = score > 5.0;
+  if (ok) {
     print("big");
   } else {
     print("small");

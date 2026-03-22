@@ -59,19 +59,32 @@ Update golden snapshots after codegen changes:
 make update_golden
 ```
 
+## Type Aliases
+
+Ngawi supports base type names and aliases.
+
+- `int` or `amba`
+- `float` or `rusdi`
+- `bool` or `fuad`
+- `string` or `imut`
+- `void`
+
 ## Example
 
 ```ngawi
-fn fact(n: int) -> int {
+fn fact(n: amba) -> amba {
   if (n <= 1) {
     return 1;
   }
   return n * fact(n - 1);
 }
 
-fn main() -> int {
-  let value: int = fact(5);
-  print("fact", 5, "=", value);
+fn main() -> amba {
+  let value: amba = fact(5);
+  let label: imut = "fact";
+  let ok: fuad = true;
+  let scale: rusdi = 1.0;
+  print(label, 5, "=", value, ok, scale);
   return 0;
 }
 ```

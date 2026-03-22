@@ -1,12 +1,12 @@
-fn fact(n: int) -> int {
+fn fact(n: amba) -> amba {
   if (n <= 1) {
     return 1;
   }
   return n * fact(n - 1);
 }
 
-fn main() -> int {
-  let x: int = 5;
+fn main() -> amba {
+  let x: amba = 5;
   let y = fact(x);
   print("fact", x, "=", y);
   return 0;

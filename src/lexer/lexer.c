@@ -73,10 +73,14 @@ static TokenKind keyword_kind(const char *s, size_t n) {
   if (n == 4 && strncmp(s, "true", 4) == 0) return TOK_KW_TRUE;
   if (n == 4 && strncmp(s, "void", 4) == 0) return TOK_KW_VOID;
   if (n == 3 && strncmp(s, "int", 3) == 0) return TOK_KW_INT;
+  if (n == 4 && strncmp(s, "amba", 4) == 0) return TOK_KW_AMBA;
   if (n == 5 && strncmp(s, "const", 5) == 0) return TOK_KW_CONST;
   if (n == 5 && strncmp(s, "while", 5) == 0) return TOK_KW_WHILE;
   if (n == 5 && strncmp(s, "false", 5) == 0) return TOK_KW_FALSE;
   if (n == 5 && strncmp(s, "float", 5) == 0) return TOK_KW_FLOAT;
+  if (n == 5 && strncmp(s, "rusdi", 5) == 0) return TOK_KW_RUSDI;
+  if (n == 4 && strncmp(s, "fuad", 4) == 0) return TOK_KW_FUAD;
+  if (n == 4 && strncmp(s, "imut", 4) == 0) return TOK_KW_IMUT;
   if (n == 6 && strncmp(s, "return", 6) == 0) return TOK_KW_RETURN;
   if (n == 6 && strncmp(s, "string", 6) == 0) return TOK_KW_STRING;
   if (n == 4 && strncmp(s, "bool", 4) == 0) return TOK_KW_BOOL;
@@ -213,6 +217,10 @@ const char *token_kind_name(TokenKind kind) {
     case TOK_KW_FLOAT: return "KW_FLOAT";
     case TOK_KW_BOOL: return "KW_BOOL";
     case TOK_KW_STRING: return "KW_STRING";
+    case TOK_KW_AMBA: return "KW_AMBA";
+    case TOK_KW_RUSDI: return "KW_RUSDI";
+    case TOK_KW_FUAD: return "KW_FUAD";
+    case TOK_KW_IMUT: return "KW_IMUT";
     case TOK_PLUS: return "PLUS";
     case TOK_MINUS: return "MINUS";
     case TOK_STAR: return "STAR";

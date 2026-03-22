@@ -55,6 +55,39 @@ static void test_numbers_strings_comments(void) {
   expect_kind(t, TOK_STRING_LIT, "string_lit");
 }
 
+static void test_alias_type_keywords(void) {
+  const char *src = "let a: amba = 1; let b: rusdi = 2.0; let c: fuad = true; let d: imut = \"x\";";
+  Lexer lx;
+  lexer_init(&lx, "alias.ngawi", src);
+
+  Token t;
+  int seen_amba = 0, seen_rusdi = 0, seen_fuad = 0, seen_imut = 0;
+  do {
+    t = lexer_next(&lx);
+    if (t.kind == TOK_KW_AMBA) seen_amba = 1;
+    if (t.kind == TOK_KW_RUSDI) seen_rusdi = 1;
+    if (t.kind == TOK_KW_FUAD) seen_fuad = 1;
+    if (t.kind == TOK_KW_IMUT) seen_imut = 1;
+  } while (t.kind != TOK_EOF);
+
+  if (!seen_amba) {
+    fprintf(stderr, "FAIL alias keyword: amba not recognized\n");
+    failures++;
+  }
+  if (!seen_rusdi) {
+    fprintf(stderr, "FAIL alias keyword: rusdi not recognized\n");
+    failures++;
+  }
+  if (!seen_fuad) {
+    fprintf(stderr, "FAIL alias keyword: fuad not recognized\n");
+    failures++;
+  }
+  if (!seen_imut) {
+    fprintf(stderr, "FAIL alias keyword: imut not recognized\n");
+    failures++;
+  }
+}
+
 static void test_invalid_token(void) {
   const char *src = "let x = @;";
   Lexer lx;
@@ -71,6 +104,7 @@ static void test_invalid_token(void) {
 int main(void) {
   test_keywords_and_symbols();
   test_numbers_strings_comments();
+  test_alias_type_keywords();
   test_invalid_token();
 
   if (failures > 0) {

@@ -8,7 +8,8 @@ int main(void);
 
 int main(void)
 {
-  ng_print_string("Hello, Ngawi");
+  const char * msg = "Hello, Ngawi";
+  ng_print_string(msg);
   ng_print_string("\n");
   return 0;
 }

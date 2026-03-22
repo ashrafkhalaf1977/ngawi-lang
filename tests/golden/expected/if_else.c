@@ -8,8 +8,9 @@ int main(void);
 
 int main(void)
 {
-  int64_t n = 7;
-  if ((n > 5))
+  double score = 7;
+  bool ok = (score > 5);
+  if (ok)
   {
     ng_print_string("big");
     ng_print_string("\n");

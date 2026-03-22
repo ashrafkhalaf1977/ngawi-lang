@@ -118,10 +118,10 @@ static Token consume(Parser *p, TokenKind k, const char *msg) {
 }
 
 static TypeKind parse_type(Parser *p) {
-  if (match(p, TOK_KW_INT)) return TYPE_INT;
-  if (match(p, TOK_KW_FLOAT)) return TYPE_FLOAT;
-  if (match(p, TOK_KW_BOOL)) return TYPE_BOOL;
-  if (match(p, TOK_KW_STRING)) return TYPE_STRING;
+  if (match(p, TOK_KW_INT) || match(p, TOK_KW_AMBA)) return TYPE_INT;
+  if (match(p, TOK_KW_FLOAT) || match(p, TOK_KW_RUSDI)) return TYPE_FLOAT;
+  if (match(p, TOK_KW_BOOL) || match(p, TOK_KW_FUAD)) return TYPE_BOOL;
+  if (match(p, TOK_KW_STRING) || match(p, TOK_KW_IMUT)) return TYPE_STRING;
   if (match(p, TOK_KW_VOID)) return TYPE_VOID;
   parse_error(p, "expected type");
   return TYPE_VOID;

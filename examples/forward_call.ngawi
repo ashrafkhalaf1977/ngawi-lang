@@ -1,9 +1,9 @@
-fn main() -> int {
-  let v: int = twice(21);
+fn main() -> amba {
+  let v: amba = twice(21);
   print(v);
   return 0;
 }
 
-fn twice(x: int) -> int {
+fn twice(x: amba) -> amba {
   return x * 2;
 }
