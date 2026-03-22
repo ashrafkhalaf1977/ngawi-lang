@@ -197,6 +197,8 @@ Rules:
 
 All string helper arguments must be `string`.
 
+Runtime note (current MVP): `to_lower` and string `+` create new heap strings and are not freed yet.
+
 ## 10. Diagnostics
 
 Compiler diagnostics include:
