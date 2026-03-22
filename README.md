@@ -81,6 +81,10 @@ Cast builtin aliases:
 - `to_int(x)` or `to_amba(x)`
 - `to_float(x)` or `to_rusdi(x)`
 
+## Specification
+
+See `docs/language-spec.md` for the current language spec.
+
 ## Example
 
 ```ngawi
