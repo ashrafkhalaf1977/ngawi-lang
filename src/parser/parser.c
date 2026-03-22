@@ -579,8 +579,15 @@ static Stmt *parse_match(Parser *p) {
       arm.pattern_kind = MATCH_PATTERN_BOOL;
       arm.bool_value = check(p, TOK_KW_TRUE) ? 1 : 0;
       advance(p);
+    } else if (check(p, TOK_STRING_LIT)) {
+      Token lit = p->cur;
+      size_t inner = lit.length >= 2 ? lit.length - 2 : 0;
+      arm.pattern_kind = MATCH_PATTERN_STRING;
+      arm.string_value = (char *)xcalloc(inner + 1, 1);
+      if (inner > 0) memcpy(arm.string_value, lit.start + 1, inner);
+      advance(p);
     } else {
-      parse_error(p, "expected int/bool literal or '_' in match arm");
+      parse_error(p, "expected int/bool/string literal or '_' in match arm");
       break;
     }
 
@@ -798,6 +805,7 @@ static void stmt_free(Stmt *s) {
     case STMT_MATCH:
       expr_free(s->as.match_stmt.subject);
       for (size_t i = 0; i < s->as.match_stmt.arm_count; i++) {
+        free(s->as.match_stmt.arms[i].string_value);
         stmt_free(s->as.match_stmt.arms[i].body);
       }
       free(s->as.match_stmt.arms);

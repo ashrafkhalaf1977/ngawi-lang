@@ -73,12 +73,14 @@ typedef enum MatchPatternKind {
   MATCH_PATTERN_WILDCARD,
   MATCH_PATTERN_INT,
   MATCH_PATTERN_BOOL,
+  MATCH_PATTERN_STRING,
 } MatchPatternKind;
 
 typedef struct MatchArm {
   MatchPatternKind pattern_kind;
   int64_t int_value;
   int bool_value;
+  char *string_value;
   int line;
   int col;
   Stmt *body;

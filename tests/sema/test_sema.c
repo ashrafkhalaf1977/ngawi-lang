@@ -337,10 +337,30 @@ static void test_match_rules(void) {
       "  return 0;\n"
       "}\n";
 
-  const char *bad_type_src =
+  const char *ok_string_src =
       "fn main() -> int {\n"
       "  let s: string = \"x\";\n"
       "  match s {\n"
+      "    \"x\" => { print(\"ok\"); }\n"
+      "    _ => { print(\"other\"); }\n"
+      "  }\n"
+      "  return 0;\n"
+      "}\n";
+
+  const char *dup_string_src =
+      "fn main() -> int {\n"
+      "  let s: string = \"x\";\n"
+      "  match s {\n"
+      "    \"x\" => { print(\"a\"); }\n"
+      "    \"x\" => { print(\"b\"); }\n"
+      "  }\n"
+      "  return 0;\n"
+      "}\n";
+
+  const char *bad_type_src =
+      "fn main() -> int {\n"
+      "  let f: float = 1.0;\n"
+      "  match f {\n"
       "    _ => { print(\"other\"); }\n"
       "  }\n"
       "  return 0;\n"
@@ -356,16 +376,32 @@ static void test_match_rules(void) {
       "  return 0;\n"
       "}\n";
 
+  const char *bad_string_arm_src =
+      "fn main() -> int {\n"
+      "  let s: string = \"x\";\n"
+      "  match s {\n"
+      "    true => { print(\"one\"); }\n"
+      "    _ => { print(\"other\"); }\n"
+      "  }\n"
+      "  return 0;\n"
+      "}\n";
+
   expect(run_program("match_ok.ngawi", ok_src, 0) == 0, "valid int match should pass");
   expect(run_program("match_ok_bool.ngawi", ok_bool_src, 0) == 0,
          "valid bool match should pass");
+  expect(run_program("match_ok_string.ngawi", ok_string_src, 0) == 0,
+         "valid string match should pass");
   expect(run_program("match_dup.ngawi", dup_src, 1) != 0, "duplicate int match arm should fail");
   expect(run_program("match_dup_bool.ngawi", dup_bool_src, 1) != 0,
          "duplicate bool match arm should fail");
+  expect(run_program("match_dup_string.ngawi", dup_string_src, 1) != 0,
+         "duplicate string match arm should fail");
   expect(run_program("match_bad_type.ngawi", bad_type_src, 1) != 0,
-         "non-int/bool match subject should fail");
+         "non-int/bool/string match subject should fail");
   expect(run_program("match_bad_arm.ngawi", bad_arm_src, 1) != 0,
          "bool match with int arm should fail");
+  expect(run_program("match_bad_string_arm.ngawi", bad_string_arm_src, 1) != 0,
+         "string match with non-string arm should fail");
 }
 
 static void test_missing_main(void) {

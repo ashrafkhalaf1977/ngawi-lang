@@ -355,40 +355,79 @@ static void emit_stmt(CGen *g, Stmt *st) {
       break;
 
     case STMT_MATCH:
-      emit_indent(g);
-      emit(g, "switch (");
-      emit_expr(g, st->as.match_stmt.subject);
-      emit(g, ")\n");
-      emit_indent(g);
-      emit(g, "{\n");
-      g->indent++;
-      for (size_t i = 0; i < st->as.match_stmt.arm_count; i++) {
-        MatchArm *arm = &st->as.match_stmt.arms[i];
+      if (st->as.match_stmt.subject->inferred_type == TYPE_STRING) {
         emit_indent(g);
-        if (arm->pattern_kind == MATCH_PATTERN_WILDCARD) {
-          emit(g, "default:\n");
-        } else if (arm->pattern_kind == MATCH_PATTERN_INT) {
-          emitf(g, "case %lld:\n", (long long)arm->int_value);
-        } else {
-          emitf(g, "case %d:\n", arm->bool_value ? 1 : 0);
+        emitf(g, "const char *__ng_match_s_%d_%d = ", st->line, st->col);
+        emit_expr(g, st->as.match_stmt.subject);
+        emit(g, ";\n");
+
+        MatchArm *wildcard_arm = NULL;
+        int emitted_any = 0;
+
+        for (size_t i = 0; i < st->as.match_stmt.arm_count; i++) {
+          MatchArm *arm = &st->as.match_stmt.arms[i];
+          if (arm->pattern_kind == MATCH_PATTERN_WILDCARD) {
+            wildcard_arm = arm;
+            continue;
+          }
+
+          emit_indent(g);
+          if (!emitted_any) {
+            emitf(g, "if (ng_string_eq(__ng_match_s_%d_%d, ", st->line, st->col);
+          } else {
+            emitf(g, "else if (ng_string_eq(__ng_match_s_%d_%d, ", st->line, st->col);
+          }
+          emit_string_escaped(g, arm->string_value ? arm->string_value : "");
+          emit(g, "))\n");
+          emit_stmt(g, arm->body);
+          emitted_any = 1;
         }
 
+        if (wildcard_arm) {
+          if (emitted_any) {
+            emit_indent(g);
+            emit(g, "else\n");
+            emit_stmt(g, wildcard_arm->body);
+          } else {
+            emit_stmt(g, wildcard_arm->body);
+          }
+        }
+      } else {
+        emit_indent(g);
+        emit(g, "switch (");
+        emit_expr(g, st->as.match_stmt.subject);
+        emit(g, ")\n");
         emit_indent(g);
         emit(g, "{\n");
         g->indent++;
-        emit_stmt(g, arm->body);
-        if (arm->body->kind != STMT_RETURN && arm->body->kind != STMT_BREAK &&
-            arm->body->kind != STMT_CONTINUE) {
+        for (size_t i = 0; i < st->as.match_stmt.arm_count; i++) {
+          MatchArm *arm = &st->as.match_stmt.arms[i];
           emit_indent(g);
-          emit(g, "break;\n");
+          if (arm->pattern_kind == MATCH_PATTERN_WILDCARD) {
+            emit(g, "default:\n");
+          } else if (arm->pattern_kind == MATCH_PATTERN_INT) {
+            emitf(g, "case %lld:\n", (long long)arm->int_value);
+          } else {
+            emitf(g, "case %d:\n", arm->bool_value ? 1 : 0);
+          }
+
+          emit_indent(g);
+          emit(g, "{\n");
+          g->indent++;
+          emit_stmt(g, arm->body);
+          if (arm->body->kind != STMT_RETURN && arm->body->kind != STMT_BREAK &&
+              arm->body->kind != STMT_CONTINUE) {
+            emit_indent(g);
+            emit(g, "break;\n");
+          }
+          g->indent--;
+          emit_indent(g);
+          emit(g, "}\n");
         }
         g->indent--;
         emit_indent(g);
         emit(g, "}\n");
       }
-      g->indent--;
-      emit_indent(g);
-      emit(g, "}\n");
       break;
 
     case STMT_BREAK:

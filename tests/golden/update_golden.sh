@@ -23,6 +23,7 @@ mkdir -p tests/golden/expected
 ./ngawic build examples/elif.ngawi -o tests/golden/expected/elif -S >/dev/null
 ./ngawic build examples/match.ngawi -o tests/golden/expected/match -S >/dev/null
 ./ngawic build examples/match_bool.ngawi -o tests/golden/expected/match_bool -S >/dev/null
+./ngawic build examples/match_string.ngawi -o tests/golden/expected/match_string -S >/dev/null
 ./ngawic build examples/string_builtins.ngawi -o tests/golden/expected/string_builtins -S >/dev/null
 ./ngawic build examples/import_main.ngawi -o tests/golden/expected/import_main -S >/dev/null
 

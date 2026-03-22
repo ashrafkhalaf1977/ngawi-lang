@@ -651,8 +651,9 @@ static void check_stmt(Sema *s, Stmt *st) {
 
     case STMT_MATCH: {
       TypeKind stype = check_expr(s, st->as.match_stmt.subject);
-      if (stype != TYPE_VOID && !type_eq(stype, TYPE_INT) && !type_eq(stype, TYPE_BOOL)) {
-        sema_error(s, st->line, st->col, "match subject must be int or bool, got '%s'",
+      if (stype != TYPE_VOID && !type_eq(stype, TYPE_INT) && !type_eq(stype, TYPE_BOOL) &&
+          !type_eq(stype, TYPE_STRING)) {
+        sema_error(s, st->line, st->col, "match subject must be int, bool, or string, got '%s'",
                    type_kind_name(stype));
       }
 
@@ -670,6 +671,9 @@ static void check_stmt(Sema *s, Stmt *st) {
             sema_error(s, arm->line, arm->col, "int match arm must be int literal or '_'");
           } else if (stype == TYPE_BOOL && arm->pattern_kind != MATCH_PATTERN_BOOL) {
             sema_error(s, arm->line, arm->col, "bool match arm must be true/false or '_'");
+          } else if (stype == TYPE_STRING && arm->pattern_kind != MATCH_PATTERN_STRING) {
+            sema_error(s, arm->line, arm->col,
+                       "string match arm must be string literal or '_'");
           }
 
           for (size_t j = 0; j < i; j++) {
@@ -684,6 +688,12 @@ static void check_stmt(Sema *s, Stmt *st) {
             if (arm->pattern_kind == MATCH_PATTERN_BOOL && prev->bool_value == arm->bool_value) {
               sema_error(s, arm->line, arm->col, "duplicate match arm value '%s'",
                          arm->bool_value ? "true" : "false");
+              break;
+            }
+            if (arm->pattern_kind == MATCH_PATTERN_STRING && prev->string_value &&
+                arm->string_value && strcmp(prev->string_value, arm->string_value) == 0) {
+              sema_error(s, arm->line, arm->col, "duplicate match arm value '%s'",
+                         arm->string_value);
               break;
             }
           }
