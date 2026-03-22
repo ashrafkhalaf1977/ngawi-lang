@@ -130,6 +130,24 @@ static void test_loop_control_keywords(void) {
   expect_kind(t5, TOK_EOF, "kw_continue_eof");
 }
 
+static void test_percent_token(void) {
+  const char *src = "let x: int = 5 % 2;";
+  Lexer lx;
+  lexer_init(&lx, "percent.ngawi", src);
+
+  Token t;
+  int seen_percent = 0;
+  do {
+    t = lexer_next(&lx);
+    if (t.kind == TOK_PERCENT) seen_percent = 1;
+  } while (t.kind != TOK_EOF);
+
+  if (!seen_percent) {
+    fprintf(stderr, "FAIL operator token: percent not recognized\n");
+    failures++;
+  }
+}
+
 static void test_invalid_token(void) {
   const char *src = "let x = @;";
   Lexer lx;
@@ -149,6 +167,7 @@ int main(void) {
   test_alias_type_keywords();
   test_alias_decl_keywords();
   test_loop_control_keywords();
+  test_percent_token();
   test_invalid_token();
 
   if (failures > 0) {

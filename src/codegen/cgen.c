@@ -43,6 +43,7 @@ static const char *op_text(int op) {
     case TOK_MINUS: return "-";
     case TOK_STAR: return "*";
     case TOK_SLASH: return "/";
+    case TOK_PERCENT: return "%";
     case TOK_EQ: return "==";
     case TOK_NE: return "!=";
     case TOK_LT: return "<";

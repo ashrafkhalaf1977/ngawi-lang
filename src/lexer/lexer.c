@@ -163,6 +163,7 @@ Token lexer_next(Lexer *lx) {
       return make_token(lx, TOK_MINUS, start, line, col);
     case '*': return make_single(lx, TOK_STAR, start, line, col);
     case '/': return make_single(lx, TOK_SLASH, start, line, col);
+    case '%': return make_single(lx, TOK_PERCENT, start, line, col);
     case '!':
       advance(lx);
       if (match(lx, '=')) return make_token(lx, TOK_NE, start, line, col);
@@ -233,6 +234,7 @@ const char *token_kind_name(TokenKind kind) {
     case TOK_MINUS: return "MINUS";
     case TOK_STAR: return "STAR";
     case TOK_SLASH: return "SLASH";
+    case TOK_PERCENT: return "PERCENT";
     case TOK_BANG: return "BANG";
     case TOK_ASSIGN: return "ASSIGN";
     case TOK_EQ: return "EQ";

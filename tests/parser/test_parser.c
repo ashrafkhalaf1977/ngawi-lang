@@ -38,6 +38,21 @@ static void test_parse_error(void) {
   program_free(p);
 }
 
+static void test_parse_modulo_expr(void) {
+  const char *src =
+      "fn main() -> int {\n"
+      "  let r: int = 5 % 2;\n"
+      "  return r;\n"
+      "}\n";
+
+  int had_error = 0;
+  Program *p = parse_program("modulo.ngawi", src, &had_error);
+  expect(had_error == 0, "modulo parse should succeed");
+  expect(p != NULL, "modulo program not null");
+  expect(p->func_count == 1, "modulo one function expected");
+  program_free(p);
+}
+
 static void test_parse_for_loop(void) {
   const char *src =
       "fn main() -> int {\n"
@@ -94,6 +109,7 @@ static void test_parse_recovery_keeps_following_functions(void) {
 int main(void) {
   test_parse_main();
   test_parse_error();
+  test_parse_modulo_expr();
   test_parse_for_loop();
   test_parse_break_continue();
   test_parse_recovery_keeps_following_functions();

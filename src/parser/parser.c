@@ -236,7 +236,7 @@ static Expr *parse_unary(Parser *p) {
 
 static Expr *parse_factor(Parser *p) {
   Expr *left = parse_unary(p);
-  while (check(p, TOK_STAR) || check(p, TOK_SLASH)) {
+  while (check(p, TOK_STAR) || check(p, TOK_SLASH) || check(p, TOK_PERCENT)) {
     Token op = p->cur;
     advance(p);
     Expr *right = parse_unary(p);

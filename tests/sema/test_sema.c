@@ -72,6 +72,25 @@ static void test_break_continue_scope(void) {
          "break outside loop should fail");
 }
 
+static void test_modulo_type_rules(void) {
+  const char *ok_src =
+      "fn main() -> int {\n"
+      "  let r: int = 9 % 4;\n"
+      "  return r;\n"
+      "}\n";
+
+  const char *bad_src =
+      "fn main() -> int {\n"
+      "  let a: float = 9.0;\n"
+      "  let b: float = 4.0;\n"
+      "  let r = a % b;\n"
+      "  return 0;\n"
+      "}\n";
+
+  expect(run_program("mod_ok.ngawi", ok_src) == 0, "int modulo should pass");
+  expect(run_program("mod_bad.ngawi", bad_src) != 0, "float modulo should fail");
+}
+
 static void test_missing_main(void) {
   const char *src =
       "fn nope() -> int {\n"
@@ -84,6 +103,7 @@ static void test_missing_main(void) {
 int main(void) {
   test_valid_program();
   test_type_mismatch();
+  test_modulo_type_rules();
   test_break_continue_scope();
   test_missing_main();
 

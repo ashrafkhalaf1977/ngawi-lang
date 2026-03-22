@@ -347,6 +347,16 @@ static TypeKind check_expr(Sema *s, Expr *e) {
         return set_expr_type(e, lhs);
       }
 
+      if (op == TOK_PERCENT) {
+        if (!type_eq(lhs, TYPE_INT) || !type_eq(rhs, TYPE_INT)) {
+          sema_error(s, e->line, e->col,
+                     "'%%' operator expects int operands, got '%s' and '%s'",
+                     type_kind_name(lhs), type_kind_name(rhs));
+          return set_expr_type(e, TYPE_VOID);
+        }
+        return set_expr_type(e, TYPE_INT);
+      }
+
       if (op == TOK_LT || op == TOK_LE || op == TOK_GT || op == TOK_GE) {
         if (!type_is_numeric(lhs) || !type_is_numeric(rhs) || !type_eq(lhs, rhs)) {
           sema_error(s, e->line, e->col,

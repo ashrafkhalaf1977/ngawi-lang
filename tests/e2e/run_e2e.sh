@@ -28,5 +28,6 @@ run_case examples/while.ngawi e2e_while $'1\n2\n3'
 run_case examples/forward_call.ngawi e2e_forward "42"
 run_case examples/for_loop.ngawi e2e_for "6"
 run_case examples/break_continue.ngawi e2e_break_continue "8"
+run_case examples/modulo.ngawi e2e_modulo "1"
 
 echo "All e2e tests passed"
