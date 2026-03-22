@@ -386,6 +386,25 @@ static void test_match_rules(void) {
       "  return 0;\n"
       "}\n";
 
+  const char *bad_unreachable_arm_src =
+      "fn main() -> int {\n"
+      "  let x: int = 1;\n"
+      "  match x {\n"
+      "    _ => { print(\"any\"); }\n"
+      "    1 => { print(\"one\"); }\n"
+      "  }\n"
+      "  return 0;\n"
+      "}\n";
+
+  const char *bad_bool_non_exhaustive_src =
+      "fn main() -> int {\n"
+      "  let ok: bool = true;\n"
+      "  match ok {\n"
+      "    true => { print(\"yes\"); }\n"
+      "  }\n"
+      "  return 0;\n"
+      "}\n";
+
   expect(run_program("match_ok.ngawi", ok_src, 0) == 0, "valid int match should pass");
   expect(run_program("match_ok_bool.ngawi", ok_bool_src, 0) == 0,
          "valid bool match should pass");
@@ -402,6 +421,10 @@ static void test_match_rules(void) {
          "bool match with int arm should fail");
   expect(run_program("match_bad_string_arm.ngawi", bad_string_arm_src, 1) != 0,
          "string match with non-string arm should fail");
+  expect(run_program("match_bad_unreachable_arm.ngawi", bad_unreachable_arm_src, 1) != 0,
+         "match arm after wildcard should fail");
+  expect(run_program("match_bad_bool_non_exhaustive.ngawi", bad_bool_non_exhaustive_src, 1) != 0,
+         "bool match without false arm or wildcard should fail");
 }
 
 static void test_missing_main(void) {

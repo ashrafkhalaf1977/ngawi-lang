@@ -177,8 +177,10 @@ Rules:
 - `int` subjects use int literal arms (`0`, `1`, ...)
 - `bool` subjects use `true` / `false` arms
 - `string` subjects use string literal arms (`"x"`, `"hello"`, ...)
-- `_` is wildcard arm
+- `_` is wildcard arm and should appear last
+- arms after wildcard are rejected as unreachable
 - duplicate literal arms are rejected by sema
+- `bool` match without wildcard must include both `true` and `false` arms
 
 ## 9. Builtins
 

@@ -71,6 +71,8 @@ match x {
 ```
 
 Current MVP supports `int`, `bool`, and `string` subjects.
+Wildcard arm `_` should be last.
+For `bool`, if wildcard is omitted, include both `true` and `false` arms.
 
 ```ngawi
 match name {

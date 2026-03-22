@@ -658,6 +658,10 @@ static void check_stmt(Sema *s, Stmt *st) {
       }
 
       int wildcard_count = 0;
+      int wildcard_index = -1;
+      int seen_true = 0;
+      int seen_false = 0;
+
       for (size_t i = 0; i < st->as.match_stmt.arm_count; i++) {
         MatchArm *arm = &st->as.match_stmt.arms[i];
 
@@ -666,7 +670,12 @@ static void check_stmt(Sema *s, Stmt *st) {
           if (wildcard_count > 1) {
             sema_error(s, arm->line, arm->col, "match allows only one wildcard '_' arm");
           }
+          if (wildcard_index < 0) wildcard_index = (int)i;
         } else {
+          if (wildcard_index >= 0) {
+            sema_error(s, arm->line, arm->col, "unreachable match arm after wildcard '_'");
+          }
+
           if (stype == TYPE_INT && arm->pattern_kind != MATCH_PATTERN_INT) {
             sema_error(s, arm->line, arm->col, "int match arm must be int literal or '_'");
           } else if (stype == TYPE_BOOL && arm->pattern_kind != MATCH_PATTERN_BOOL) {
@@ -674,6 +683,14 @@ static void check_stmt(Sema *s, Stmt *st) {
           } else if (stype == TYPE_STRING && arm->pattern_kind != MATCH_PATTERN_STRING) {
             sema_error(s, arm->line, arm->col,
                        "string match arm must be string literal or '_'");
+          }
+
+          if (stype == TYPE_BOOL && arm->pattern_kind == MATCH_PATTERN_BOOL) {
+            if (arm->bool_value) {
+              seen_true = 1;
+            } else {
+              seen_false = 1;
+            }
           }
 
           for (size_t j = 0; j < i; j++) {
@@ -702,6 +719,12 @@ static void check_stmt(Sema *s, Stmt *st) {
         push_scope(s);
         check_stmt(s, arm->body);
         pop_scope(s);
+      }
+
+      if (stype == TYPE_BOOL && wildcard_count == 0 && (!seen_true || !seen_false)) {
+        const char *missing = !seen_true ? "true" : "false";
+        sema_error(s, st->line, st->col,
+                   "non-exhaustive bool match: missing '%s' arm or wildcard '_'", missing);
       }
       break;
     }
