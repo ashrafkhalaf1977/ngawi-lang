@@ -70,7 +70,7 @@ match x {
 }
 ```
 
-Current MVP supports `int` subject only.
+Current MVP supports `int` and `bool` subjects.
 
 ### for
 
