@@ -222,6 +222,26 @@ static void test_string_equality(void) {
   expect(run_program("str_eq_bad.ngawi", bad_src, 1) != 0, "mixed equality should fail");
 }
 
+static void test_len_builtin(void) {
+  const char *ok_src =
+      "fn main() -> int {\n"
+      "  let s: string = \"ngawi\";\n"
+      "  let n: int = len(s);\n"
+      "  print(n);\n"
+      "  return 0;\n"
+      "}\n";
+
+  const char *bad_src =
+      "fn main() -> int {\n"
+      "  let x: int = 123;\n"
+      "  let n = len(x);\n"
+      "  return 0;\n"
+      "}\n";
+
+  expect(run_program("len_ok.ngawi", ok_src, 0) == 0, "len on string should pass");
+  expect(run_program("len_bad.ngawi", bad_src, 1) != 0, "len on non-string should fail");
+}
+
 static void test_missing_main(void) {
   const char *src =
       "fn nope() -> int {\n"
@@ -239,6 +259,7 @@ int main(void) {
   test_compound_assign_rules();
   test_incdec_rules();
   test_string_equality();
+  test_len_builtin();
   test_break_continue_scope();
   test_missing_main();
 

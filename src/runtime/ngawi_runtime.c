@@ -16,3 +16,8 @@ int ng_string_eq(const char *a, const char *b) {
   if (!a || !b) return 0;
   return strcmp(a, b) == 0;
 }
+
+int64_t ng_string_len(const char *s) {
+  if (!s) return 0;
+  return (int64_t)strlen(s);
+}

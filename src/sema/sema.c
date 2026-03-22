@@ -287,6 +287,20 @@ static TypeKind check_call(Sema *s, Expr *e) {
     return set_expr_type(e, TYPE_FLOAT);
   }
 
+  if (strcmp(e->as.call.name, "len") == 0) {
+    if (e->as.call.arg_count != 1) {
+      sema_error(s, e->line, e->col, "len expects 1 argument, got %zu", e->as.call.arg_count);
+      return set_expr_type(e, TYPE_VOID);
+    }
+    TypeKind at = check_expr(s, e->as.call.args[0]);
+    if (at == TYPE_VOID) return set_expr_type(e, TYPE_VOID);
+    if (!type_eq(at, TYPE_STRING)) {
+      sema_error(s, e->line, e->col, "len expects string, got '%s'", type_kind_name(at));
+      return set_expr_type(e, TYPE_VOID);
+    }
+    return set_expr_type(e, TYPE_INT);
+  }
+
   const FuncSymbol *fn = lookup_fn(s, e->as.call.name);
   if (!fn) {
     sema_error(s, e->line, e->col, "undefined function '%s'", e->as.call.name);

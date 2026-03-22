@@ -18,5 +18,6 @@ mkdir -p tests/golden/expected
 ./ngawic build examples/string_eq.ngawi -o tests/golden/expected/string_eq -S >/dev/null
 ./ngawic build examples/compound_assign.ngawi -o tests/golden/expected/compound_assign -S >/dev/null
 ./ngawic build examples/incdec.ngawi -o tests/golden/expected/incdec -S >/dev/null
+./ngawic build examples/len.ngawi -o tests/golden/expected/len -S >/dev/null
 
 echo "Golden files updated"

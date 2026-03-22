@@ -9,5 +9,6 @@ void ng_print_float(double v);
 void ng_print_bool(bool v);
 void ng_print_string(const char *s);
 int ng_string_eq(const char *a, const char *b);
+int64_t ng_string_len(const char *s);
 
 #endif

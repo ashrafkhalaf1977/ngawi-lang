@@ -183,6 +183,12 @@ static void emit_expr(CGen *g, Expr *e) {
         emit(g, "))");
         break;
       }
+      if (strcmp(e->as.call.name, "len") == 0 && e->as.call.arg_count == 1) {
+        emit(g, "ng_string_len(");
+        emit_expr(g, e->as.call.args[0]);
+        emit(g, ")");
+        break;
+      }
 
       emit(g, e->as.call.name);
       emit(g, "(");
