@@ -148,6 +148,44 @@ static void test_percent_token(void) {
   }
 }
 
+static void test_compound_assign_tokens(void) {
+  const char *src = "x += 1; y -= 2; z *= 3; a /= 4; b %= 5;";
+  Lexer lx;
+  lexer_init(&lx, "compound.ngawi", src);
+
+  int seen_plus = 0, seen_minus = 0, seen_star = 0, seen_slash = 0, seen_percent = 0;
+  Token t;
+  do {
+    t = lexer_next(&lx);
+    if (t.kind == TOK_PLUS_ASSIGN) seen_plus = 1;
+    if (t.kind == TOK_MINUS_ASSIGN) seen_minus = 1;
+    if (t.kind == TOK_STAR_ASSIGN) seen_star = 1;
+    if (t.kind == TOK_SLASH_ASSIGN) seen_slash = 1;
+    if (t.kind == TOK_PERCENT_ASSIGN) seen_percent = 1;
+  } while (t.kind != TOK_EOF);
+
+  if (!seen_plus) {
+    fprintf(stderr, "FAIL operator token: += not recognized\n");
+    failures++;
+  }
+  if (!seen_minus) {
+    fprintf(stderr, "FAIL operator token: -= not recognized\n");
+    failures++;
+  }
+  if (!seen_star) {
+    fprintf(stderr, "FAIL operator token: *= not recognized\n");
+    failures++;
+  }
+  if (!seen_slash) {
+    fprintf(stderr, "FAIL operator token: /= not recognized\n");
+    failures++;
+  }
+  if (!seen_percent) {
+    fprintf(stderr, "FAIL operator token: %= not recognized\n");
+    failures++;
+  }
+}
+
 static void test_invalid_token(void) {
   const char *src = "let x = @;";
   Lexer lx;
@@ -168,6 +206,7 @@ int main(void) {
   test_alias_decl_keywords();
   test_loop_control_keywords();
   test_percent_token();
+  test_compound_assign_tokens();
   test_invalid_token();
 
   if (failures > 0) {

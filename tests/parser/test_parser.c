@@ -53,6 +53,23 @@ static void test_parse_modulo_expr(void) {
   program_free(p);
 }
 
+static void test_parse_compound_assign(void) {
+  const char *src =
+      "fn main() -> int {\n"
+      "  let x: int = 1;\n"
+      "  x += 2;\n"
+      "  x *= 3;\n"
+      "  return x;\n"
+      "}\n";
+
+  int had_error = 0;
+  Program *p = parse_program("compound_assign.ngawi", src, &had_error);
+  expect(had_error == 0, "compound assignment parse should succeed");
+  expect(p != NULL, "compound assignment program not null");
+  expect(p->func_count == 1, "compound assignment one function expected");
+  program_free(p);
+}
+
 static void test_parse_for_loop(void) {
   const char *src =
       "fn main() -> int {\n"
@@ -110,6 +127,7 @@ int main(void) {
   test_parse_main();
   test_parse_error();
   test_parse_modulo_expr();
+  test_parse_compound_assign();
   test_parse_for_loop();
   test_parse_break_continue();
   test_parse_recovery_keeps_following_functions();

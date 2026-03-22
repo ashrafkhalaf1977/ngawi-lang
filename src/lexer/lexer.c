@@ -156,14 +156,27 @@ Token lexer_next(Lexer *lx) {
 
   switch (c) {
     case '"': return lex_string(lx, start, line, col);
-    case '+': return make_single(lx, TOK_PLUS, start, line, col);
+    case '+':
+      advance(lx);
+      if (match(lx, '=')) return make_token(lx, TOK_PLUS_ASSIGN, start, line, col);
+      return make_token(lx, TOK_PLUS, start, line, col);
     case '-':
       advance(lx);
       if (match(lx, '>')) return make_token(lx, TOK_ARROW, start, line, col);
+      if (match(lx, '=')) return make_token(lx, TOK_MINUS_ASSIGN, start, line, col);
       return make_token(lx, TOK_MINUS, start, line, col);
-    case '*': return make_single(lx, TOK_STAR, start, line, col);
-    case '/': return make_single(lx, TOK_SLASH, start, line, col);
-    case '%': return make_single(lx, TOK_PERCENT, start, line, col);
+    case '*':
+      advance(lx);
+      if (match(lx, '=')) return make_token(lx, TOK_STAR_ASSIGN, start, line, col);
+      return make_token(lx, TOK_STAR, start, line, col);
+    case '/':
+      advance(lx);
+      if (match(lx, '=')) return make_token(lx, TOK_SLASH_ASSIGN, start, line, col);
+      return make_token(lx, TOK_SLASH, start, line, col);
+    case '%':
+      advance(lx);
+      if (match(lx, '=')) return make_token(lx, TOK_PERCENT_ASSIGN, start, line, col);
+      return make_token(lx, TOK_PERCENT, start, line, col);
     case '!':
       advance(lx);
       if (match(lx, '=')) return make_token(lx, TOK_NE, start, line, col);
@@ -237,6 +250,11 @@ const char *token_kind_name(TokenKind kind) {
     case TOK_PERCENT: return "PERCENT";
     case TOK_BANG: return "BANG";
     case TOK_ASSIGN: return "ASSIGN";
+    case TOK_PLUS_ASSIGN: return "PLUS_ASSIGN";
+    case TOK_MINUS_ASSIGN: return "MINUS_ASSIGN";
+    case TOK_STAR_ASSIGN: return "STAR_ASSIGN";
+    case TOK_SLASH_ASSIGN: return "SLASH_ASSIGN";
+    case TOK_PERCENT_ASSIGN: return "PERCENT_ASSIGN";
     case TOK_EQ: return "EQ";
     case TOK_NE: return "NE";
     case TOK_LT: return "LT";

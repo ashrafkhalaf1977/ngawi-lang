@@ -128,6 +128,22 @@ static TypeKind parse_type(Parser *p) {
   return TYPE_VOID;
 }
 
+static int is_assign_op(TokenKind k) {
+  return k == TOK_ASSIGN || k == TOK_PLUS_ASSIGN || k == TOK_MINUS_ASSIGN ||
+         k == TOK_STAR_ASSIGN || k == TOK_SLASH_ASSIGN || k == TOK_PERCENT_ASSIGN;
+}
+
+static int compound_assign_to_binary_op(TokenKind assign_op) {
+  switch (assign_op) {
+    case TOK_PLUS_ASSIGN: return TOK_PLUS;
+    case TOK_MINUS_ASSIGN: return TOK_MINUS;
+    case TOK_STAR_ASSIGN: return TOK_STAR;
+    case TOK_SLASH_ASSIGN: return TOK_SLASH;
+    case TOK_PERCENT_ASSIGN: return TOK_PERCENT;
+    default: return TOK_INVALID;
+  }
+}
+
 static Expr *parse_expression(Parser *p);
 static Stmt *parse_statement(Parser *p);
 
@@ -144,6 +160,38 @@ static Stmt *new_stmt(StmtKind kind, int line, int col) {
   s->kind = kind;
   s->line = line;
   s->col = col;
+  return s;
+}
+
+static Stmt *make_assignment_stmt(Parser *p, Token name_tok, TokenKind assign_op, int with_semicolon) {
+  advance(p);  // consume identifier
+  Token op_tok = p->cur;
+  advance(p);  // consume assignment operator
+
+  Expr *rhs = parse_expression(p);
+
+  if (with_semicolon) {
+    if (assign_op == TOK_ASSIGN) {
+      consume(p, TOK_SEMI, "expected ';' after assignment");
+    } else {
+      consume(p, TOK_SEMI, "expected ';' after compound assignment");
+    }
+  }
+
+  if (assign_op != TOK_ASSIGN) {
+    Expr *lhs_ident = new_expr(EXPR_IDENT, name_tok.line, name_tok.col);
+    lhs_ident->as.ident_name = dup_lexeme(&name_tok);
+
+    Expr *bin = new_expr(EXPR_BINARY, op_tok.line, op_tok.col);
+    bin->as.binary.op = compound_assign_to_binary_op(assign_op);
+    bin->as.binary.left = lhs_ident;
+    bin->as.binary.right = rhs;
+    rhs = bin;
+  }
+
+  Stmt *s = new_stmt(STMT_ASSIGN, name_tok.line, name_tok.col);
+  s->as.assign.name = dup_lexeme(&name_tok);
+  s->as.assign.value = rhs;
   return s;
 }
 
@@ -399,17 +447,10 @@ static Stmt *parse_for_clause_stmt(Parser *p, int with_semicolon) {
     return s;
   }
 
-  if (check(p, TOK_IDENT) && p->next.kind == TOK_ASSIGN) {
+  if (check(p, TOK_IDENT) && is_assign_op(p->next.kind)) {
     Token name = p->cur;
-    advance(p);
-    consume(p, TOK_ASSIGN, "expected '='");
-    Expr *rhs = parse_expression(p);
-    if (with_semicolon) consume(p, TOK_SEMI, "expected ';' after assignment");
-
-    Stmt *s = new_stmt(STMT_ASSIGN, name.line, name.col);
-    s->as.assign.name = dup_lexeme(&name);
-    s->as.assign.value = rhs;
-    return s;
+    TokenKind assign_op = p->next.kind;
+    return make_assignment_stmt(p, name, assign_op, with_semicolon);
   }
 
   Token t = p->cur;
@@ -508,17 +549,10 @@ static Stmt *parse_statement(Parser *p) {
     return new_stmt(STMT_CONTINUE, kw.line, kw.col);
   }
 
-  if (check(p, TOK_IDENT) && p->next.kind == TOK_ASSIGN) {
+  if (check(p, TOK_IDENT) && is_assign_op(p->next.kind)) {
     Token name = p->cur;
-    advance(p);
-    consume(p, TOK_ASSIGN, "expected '='");
-    Expr *rhs = parse_expression(p);
-    consume(p, TOK_SEMI, "expected ';' after assignment");
-
-    Stmt *s = new_stmt(STMT_ASSIGN, name.line, name.col);
-    s->as.assign.name = dup_lexeme(&name);
-    s->as.assign.value = rhs;
-    return s;
+    TokenKind assign_op = p->next.kind;
+    return make_assignment_stmt(p, name, assign_op, 1);
   }
 
   Token t = p->cur;

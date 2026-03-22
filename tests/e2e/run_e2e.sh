@@ -31,5 +31,6 @@ run_case examples/break_continue.ngawi e2e_break_continue "8"
 run_case examples/modulo.ngawi e2e_modulo "1"
 run_case examples/cast.ngawi e2e_cast "7 3"
 run_case examples/string_eq.ngawi e2e_string_eq "true true"
+run_case examples/compound_assign.ngawi e2e_compound "0"
 
 echo "All e2e tests passed"

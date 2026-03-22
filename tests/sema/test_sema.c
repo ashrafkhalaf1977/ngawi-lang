@@ -114,6 +114,30 @@ static void test_builtin_casts(void) {
   expect(run_program("cast_bad.ngawi", bad_src) != 0, "invalid cast arg should fail");
 }
 
+static void test_compound_assign_rules(void) {
+  const char *ok_src =
+      "fn main() -> int {\n"
+      "  let x: int = 10;\n"
+      "  x += 2;\n"
+      "  x *= 3;\n"
+      "  x -= 4;\n"
+      "  x /= 2;\n"
+      "  x %= 5;\n"
+      "  return x;\n"
+      "}\n";
+
+  const char *bad_src =
+      "fn main() -> int {\n"
+      "  let s: string = \"a\";\n"
+      "  s += 1;\n"
+      "  return 0;\n"
+      "}\n";
+
+  expect(run_program("compound_ok.ngawi", ok_src) == 0, "valid compound assignments should pass");
+  expect(run_program("compound_bad.ngawi", bad_src) != 0,
+         "invalid compound assignment should fail");
+}
+
 static void test_string_equality(void) {
   const char *ok_src =
       "fn main() -> int {\n"
@@ -150,6 +174,7 @@ int main(void) {
   test_type_mismatch();
   test_modulo_type_rules();
   test_builtin_casts();
+  test_compound_assign_rules();
   test_string_equality();
   test_break_continue_scope();
   test_missing_main();
