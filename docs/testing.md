@@ -26,3 +26,13 @@ make test
 ```
 
 Do not update golden files for unrelated changes.
+
+## Debugging negative tests
+
+By default, expected-failure parser/sema/e2e tests silence diagnostics to keep output clean.
+
+To show full diagnostics while running tests:
+
+```bash
+NGAWI_TEST_SHOW_ERRORS=1 make test
+```

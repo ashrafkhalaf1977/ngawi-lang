@@ -25,11 +25,20 @@ run_fail_case() {
   local src="$1"
   local bin="$2"
 
-  if ./ngawic build "$src" -o "$bin" >/dev/null 2>/dev/null; then
-    echo "E2E FAIL: $src"
-    echo "  expected build failure but build succeeded"
-    rm -f "$bin" "$bin.c"
-    return 1
+  if [[ "${NGAWI_TEST_SHOW_ERRORS:-0}" == "1" || "${NGAWI_TEST_SHOW_ERRORS:-}" == "true" ]]; then
+    if ./ngawic build "$src" -o "$bin" >/dev/null; then
+      echo "E2E FAIL: $src"
+      echo "  expected build failure but build succeeded"
+      rm -f "$bin" "$bin.c"
+      return 1
+    fi
+  else
+    if ./ngawic build "$src" -o "$bin" >/dev/null 2>/dev/null; then
+      echo "E2E FAIL: $src"
+      echo "  expected build failure but build succeeded"
+      rm -f "$bin" "$bin.c"
+      return 1
+    fi
   fi
 
   rm -f "$bin" "$bin.c"

@@ -1,5 +1,7 @@
 #include <fcntl.h>
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 #include <unistd.h>
 
 #include "../../src/parser/parser.h"
@@ -41,10 +43,15 @@ static void silence_stderr_end(int saved_fd) {
   close(saved_fd);
 }
 
+static int test_show_errors_enabled(void) {
+  const char *v = getenv("NGAWI_TEST_SHOW_ERRORS");
+  return v && (strcmp(v, "1") == 0 || strcmp(v, "true") == 0 || strcmp(v, "yes") == 0);
+}
+
 static int run_program(const char *name, const char *src, int quiet_stderr) {
   int saved_fd = -1;
   int silenced = 0;
-  if (quiet_stderr) silenced = silence_stderr_begin(&saved_fd);
+  if (quiet_stderr && !test_show_errors_enabled()) silenced = silence_stderr_begin(&saved_fd);
 
   int parse_err = 0;
   Program *p = parse_program(name, src, &parse_err);
