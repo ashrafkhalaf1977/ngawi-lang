@@ -200,6 +200,28 @@ static void emit_expr(CGen *g, Expr *e) {
         emit(g, ")");
         break;
       }
+      if (strcmp(e->as.call.name, "contains") == 0 && e->as.call.arg_count == 2) {
+        emit(g, "ng_string_contains(");
+        emit_expr(g, e->as.call.args[0]);
+        emit(g, ", ");
+        emit_expr(g, e->as.call.args[1]);
+        emit(g, ")");
+        break;
+      }
+      if (strcmp(e->as.call.name, "starts_with") == 0 && e->as.call.arg_count == 2) {
+        emit(g, "ng_string_starts_with(");
+        emit_expr(g, e->as.call.args[0]);
+        emit(g, ", ");
+        emit_expr(g, e->as.call.args[1]);
+        emit(g, ")");
+        break;
+      }
+      if (strcmp(e->as.call.name, "to_lower") == 0 && e->as.call.arg_count == 1) {
+        emit(g, "ng_string_to_lower(");
+        emit_expr(g, e->as.call.args[0]);
+        emit(g, ")");
+        break;
+      }
 
       emit(g, e->as.call.name);
       emit(g, "(");

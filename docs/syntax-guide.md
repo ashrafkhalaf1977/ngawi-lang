@@ -103,6 +103,15 @@ let c: amba = to_amba(3.9);
 let d: rusdi = to_rusdi(7);
 ```
 
+### String helpers
+
+```ngawi
+let s: string = "NgawiLang";
+let c: bool = contains(s, "Lang");
+let p: bool = starts_with(s, "Nga");
+let low: string = to_lower(s);
+```
+
 ## Type aliases
 
 - `int` / `amba`

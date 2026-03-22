@@ -185,6 +185,14 @@ Rules:
 - `to_int(x)` / `to_amba(x)` accepts `int` or `float`
 - `to_float(x)` / `to_rusdi(x)` accepts `int` or `float`
 
+### 9.3 string helpers
+
+- `contains(s, sub) -> bool`
+- `starts_with(s, prefix) -> bool`
+- `to_lower(s) -> string`
+
+All string helper arguments must be `string`.
+
 ## 10. Diagnostics
 
 Compiler diagnostics include:

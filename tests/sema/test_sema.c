@@ -265,6 +265,29 @@ static void test_len_builtin(void) {
   expect(run_program("len_bad.ngawi", bad_src, 1) != 0, "len on non-string should fail");
 }
 
+static void test_string_builtins(void) {
+  const char *ok_src =
+      "fn main() -> int {\n"
+      "  let s: string = \"NgawiLang\";\n"
+      "  let c: bool = contains(s, \"Lang\");\n"
+      "  let p: bool = starts_with(s, \"Nga\");\n"
+      "  let low: string = to_lower(s);\n"
+      "  print(c, p, low);\n"
+      "  return 0;\n"
+      "}\n";
+
+  const char *bad_src =
+      "fn main() -> int {\n"
+      "  let x: int = 42;\n"
+      "  let c = contains(x, \"a\");\n"
+      "  return 0;\n"
+      "}\n";
+
+  expect(run_program("str_builtin_ok.ngawi", ok_src, 0) == 0, "string builtins should pass");
+  expect(run_program("str_builtin_bad.ngawi", bad_src, 1) != 0,
+         "invalid string builtins args should fail");
+}
+
 static void test_match_rules(void) {
   const char *ok_src =
       "fn main() -> int {\n"
@@ -321,6 +344,7 @@ int main(void) {
   test_string_equality();
   test_string_concat();
   test_len_builtin();
+  test_string_builtins();
   test_match_rules();
   test_break_continue_scope();
   test_missing_main();

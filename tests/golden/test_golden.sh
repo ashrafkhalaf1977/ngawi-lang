@@ -23,6 +23,7 @@ cases=(
   "string_concat:examples/string_concat.ngawi"
   "elif:examples/elif.ngawi"
   "match:examples/match.ngawi"
+  "string_builtins:examples/string_builtins.ngawi"
 )
 
 for entry in "${cases[@]}"; do

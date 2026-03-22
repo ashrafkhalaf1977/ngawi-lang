@@ -38,3 +38,34 @@ const char *ng_string_concat(const char *a, const char *b) {
   out[la + lb] = '\0';
   return out;
 }
+
+int ng_string_contains(const char *s, const char *sub) {
+  const char *haystack = s ? s : "";
+  const char *needle = sub ? sub : "";
+  return strstr(haystack, needle) != NULL;
+}
+
+int ng_string_starts_with(const char *s, const char *prefix) {
+  const char *str = s ? s : "";
+  const char *pre = prefix ? prefix : "";
+  size_t n = strlen(pre);
+  return strncmp(str, pre, n) == 0;
+}
+
+const char *ng_string_to_lower(const char *s) {
+  const char *src = s ? s : "";
+  size_t n = strlen(src);
+  char *out = (char *)malloc(n + 1);
+  if (!out) return "";
+
+  for (size_t i = 0; i < n; i++) {
+    unsigned char c = (unsigned char)src[i];
+    if (c >= 'A' && c <= 'Z') {
+      out[i] = (char)(c - 'A' + 'a');
+    } else {
+      out[i] = (char)c;
+    }
+  }
+  out[n] = '\0';
+  return out;
+}
