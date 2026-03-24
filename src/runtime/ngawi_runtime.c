@@ -152,15 +152,7 @@ ng_int_array_t ng_int_array_push(ng_int_array_t arr, int64_t value) {
 
 ng_int_array_t ng_int_array_pop(ng_int_array_t arr) {
   if (arr.len <= 0) ng_runtime_error("pop() on empty int[]");
-  if (arr.len == 1 || !arr.data) {
-    ng_int_array_t r = {NULL, 0};
-    return r;
-  }
-  int64_t new_len = arr.len - 1;
-  int64_t *out = (int64_t *)ng_runtime_alloc((size_t)new_len * sizeof(int64_t));
-  if (!out) return arr;
-  memcpy(out, arr.data, (size_t)new_len * sizeof(int64_t));
-  ng_int_array_t r = {out, new_len};
+  ng_int_array_t r = {arr.data, arr.len - 1};
   return r;
 }
 
@@ -176,15 +168,7 @@ ng_int2_array_t ng_int2_array_push(ng_int2_array_t arr, ng_int_array_t value) {
 
 ng_int2_array_t ng_int2_array_pop(ng_int2_array_t arr) {
   if (arr.len <= 0) ng_runtime_error("pop() on empty int[][]");
-  if (arr.len == 1 || !arr.data) {
-    ng_int2_array_t r = {NULL, 0};
-    return r;
-  }
-  int64_t new_len = arr.len - 1;
-  ng_int_array_t *out = (ng_int_array_t *)ng_runtime_alloc((size_t)new_len * sizeof(ng_int_array_t));
-  if (!out) return arr;
-  memcpy(out, arr.data, (size_t)new_len * sizeof(ng_int_array_t));
-  ng_int2_array_t r = {out, new_len};
+  ng_int2_array_t r = {arr.data, arr.len - 1};
   return r;
 }
 
@@ -200,15 +184,7 @@ ng_float_array_t ng_float_array_push(ng_float_array_t arr, double value) {
 
 ng_float_array_t ng_float_array_pop(ng_float_array_t arr) {
   if (arr.len <= 0) ng_runtime_error("pop() on empty float[]");
-  if (arr.len == 1 || !arr.data) {
-    ng_float_array_t r = {NULL, 0};
-    return r;
-  }
-  int64_t new_len = arr.len - 1;
-  double *out = (double *)ng_runtime_alloc((size_t)new_len * sizeof(double));
-  if (!out) return arr;
-  memcpy(out, arr.data, (size_t)new_len * sizeof(double));
-  ng_float_array_t r = {out, new_len};
+  ng_float_array_t r = {arr.data, arr.len - 1};
   return r;
 }
 
@@ -224,15 +200,7 @@ ng_float2_array_t ng_float2_array_push(ng_float2_array_t arr, ng_float_array_t v
 
 ng_float2_array_t ng_float2_array_pop(ng_float2_array_t arr) {
   if (arr.len <= 0) ng_runtime_error("pop() on empty float[][]");
-  if (arr.len == 1 || !arr.data) {
-    ng_float2_array_t r = {NULL, 0};
-    return r;
-  }
-  int64_t new_len = arr.len - 1;
-  ng_float_array_t *out = (ng_float_array_t *)ng_runtime_alloc((size_t)new_len * sizeof(ng_float_array_t));
-  if (!out) return arr;
-  memcpy(out, arr.data, (size_t)new_len * sizeof(ng_float_array_t));
-  ng_float2_array_t r = {out, new_len};
+  ng_float2_array_t r = {arr.data, arr.len - 1};
   return r;
 }
 
@@ -248,15 +216,7 @@ ng_bool_array_t ng_bool_array_push(ng_bool_array_t arr, bool value) {
 
 ng_bool_array_t ng_bool_array_pop(ng_bool_array_t arr) {
   if (arr.len <= 0) ng_runtime_error("pop() on empty bool[]");
-  if (arr.len == 1 || !arr.data) {
-    ng_bool_array_t r = {NULL, 0};
-    return r;
-  }
-  int64_t new_len = arr.len - 1;
-  bool *out = (bool *)ng_runtime_alloc((size_t)new_len * sizeof(bool));
-  if (!out) return arr;
-  memcpy(out, arr.data, (size_t)new_len * sizeof(bool));
-  ng_bool_array_t r = {out, new_len};
+  ng_bool_array_t r = {arr.data, arr.len - 1};
   return r;
 }
 
@@ -272,15 +232,7 @@ ng_bool2_array_t ng_bool2_array_push(ng_bool2_array_t arr, ng_bool_array_t value
 
 ng_bool2_array_t ng_bool2_array_pop(ng_bool2_array_t arr) {
   if (arr.len <= 0) ng_runtime_error("pop() on empty bool[][]");
-  if (arr.len == 1 || !arr.data) {
-    ng_bool2_array_t r = {NULL, 0};
-    return r;
-  }
-  int64_t new_len = arr.len - 1;
-  ng_bool_array_t *out = (ng_bool_array_t *)ng_runtime_alloc((size_t)new_len * sizeof(ng_bool_array_t));
-  if (!out) return arr;
-  memcpy(out, arr.data, (size_t)new_len * sizeof(ng_bool_array_t));
-  ng_bool2_array_t r = {out, new_len};
+  ng_bool2_array_t r = {arr.data, arr.len - 1};
   return r;
 }
 
@@ -296,15 +248,7 @@ ng_string_array_t ng_string_array_push(ng_string_array_t arr, const char *value)
 
 ng_string_array_t ng_string_array_pop(ng_string_array_t arr) {
   if (arr.len <= 0) ng_runtime_error("pop() on empty string[]");
-  if (arr.len == 1 || !arr.data) {
-    ng_string_array_t r = {NULL, 0};
-    return r;
-  }
-  int64_t new_len = arr.len - 1;
-  const char **out = (const char **)ng_runtime_alloc((size_t)new_len * sizeof(const char *));
-  if (!out) return arr;
-  memcpy(out, arr.data, (size_t)new_len * sizeof(const char *));
-  ng_string_array_t r = {out, new_len};
+  ng_string_array_t r = {arr.data, arr.len - 1};
   return r;
 }
 
@@ -322,16 +266,7 @@ ng_string2_array_t ng_string2_array_push(ng_string2_array_t arr, ng_string_array
 
 ng_string2_array_t ng_string2_array_pop(ng_string2_array_t arr) {
   if (arr.len <= 0) ng_runtime_error("pop() on empty string[][]");
-  if (arr.len == 1 || !arr.data) {
-    ng_string2_array_t r = {NULL, 0};
-    return r;
-  }
-  int64_t new_len = arr.len - 1;
-  ng_string_array_t *out =
-      (ng_string_array_t *)ng_runtime_alloc((size_t)new_len * sizeof(ng_string_array_t));
-  if (!out) return arr;
-  memcpy(out, arr.data, (size_t)new_len * sizeof(ng_string_array_t));
-  ng_string2_array_t r = {out, new_len};
+  ng_string2_array_t r = {arr.data, arr.len - 1};
   return r;
 }
 
