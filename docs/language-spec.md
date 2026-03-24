@@ -60,7 +60,7 @@ Ngawi currently supports builtin scalar types plus array MVP types:
 - `float`
 - `bool`
 - `string`
-- `int[]`, `float[]`, `bool[]`, `string[]` (MVP)
+- `int[]`, `float[]`, `bool[]`, `string[]`, `int[][]` (MVP)
 - `void`
 
 Backend mapping to C11:

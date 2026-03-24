@@ -32,7 +32,7 @@ Ngawi compiles source code to native binaries through C11.
   - AST to C11 output
   - function prototype emission
   - builtin lowering
-  - array MVP lowering (scalar array literals, index read/write)
+  - array MVP lowering (scalar arrays plus nested `int[][]`, index read/write)
 
 ### Runtime
 
