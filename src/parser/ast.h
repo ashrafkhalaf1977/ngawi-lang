@@ -9,16 +9,38 @@ typedef enum TypeKind {
   TYPE_FLOAT,
   TYPE_BOOL,
   TYPE_STRING,
-  TYPE_INT_ARRAY,
-  TYPE_INT2_ARRAY,
-  TYPE_FLOAT_ARRAY,
-  TYPE_FLOAT2_ARRAY,
-  TYPE_BOOL_ARRAY,
-  TYPE_BOOL2_ARRAY,
-  TYPE_STRING_ARRAY,
-  TYPE_STRING2_ARRAY,
   TYPE_VOID,
+
+  TYPE_ARRAY_BASE = 100,
+  TYPE_ARRAY_STRIDE = 16,
+
+  TYPE_INT_ARRAY = TYPE_ARRAY_BASE + TYPE_INT * TYPE_ARRAY_STRIDE + 1,
+  TYPE_INT2_ARRAY = TYPE_ARRAY_BASE + TYPE_INT * TYPE_ARRAY_STRIDE + 2,
+  TYPE_FLOAT_ARRAY = TYPE_ARRAY_BASE + TYPE_FLOAT * TYPE_ARRAY_STRIDE + 1,
+  TYPE_FLOAT2_ARRAY = TYPE_ARRAY_BASE + TYPE_FLOAT * TYPE_ARRAY_STRIDE + 2,
+  TYPE_BOOL_ARRAY = TYPE_ARRAY_BASE + TYPE_BOOL * TYPE_ARRAY_STRIDE + 1,
+  TYPE_BOOL2_ARRAY = TYPE_ARRAY_BASE + TYPE_BOOL * TYPE_ARRAY_STRIDE + 2,
+  TYPE_STRING_ARRAY = TYPE_ARRAY_BASE + TYPE_STRING * TYPE_ARRAY_STRIDE + 1,
+  TYPE_STRING2_ARRAY = TYPE_ARRAY_BASE + TYPE_STRING * TYPE_ARRAY_STRIDE + 2,
 } TypeKind;
+
+static inline int ng_type_is_array(TypeKind t) {
+  return (int)t >= TYPE_ARRAY_BASE;
+}
+
+static inline int ng_type_array_depth(TypeKind t) {
+  if (!ng_type_is_array(t)) return 0;
+  return ((int)t - TYPE_ARRAY_BASE) % TYPE_ARRAY_STRIDE;
+}
+
+static inline TypeKind ng_type_array_base(TypeKind t) {
+  if (!ng_type_is_array(t)) return t;
+  return (TypeKind)(((int)t - TYPE_ARRAY_BASE) / TYPE_ARRAY_STRIDE);
+}
+
+static inline TypeKind ng_type_make_array(TypeKind base, int depth) {
+  return (TypeKind)(TYPE_ARRAY_BASE + (int)base * TYPE_ARRAY_STRIDE + depth);
+}
 
 typedef struct Expr Expr;
 typedef struct Stmt Stmt;

@@ -40,19 +40,32 @@ typedef struct Sema {
 } Sema;
 
 const char *type_kind_name(TypeKind t) {
+  static char buf[64];
+
+  if (ng_type_is_array(t)) {
+    TypeKind base = ng_type_array_base(t);
+    int depth = ng_type_array_depth(t);
+    const char *base_name = "<unknown>";
+    switch (base) {
+      case TYPE_INT: base_name = "int"; break;
+      case TYPE_FLOAT: base_name = "float"; break;
+      case TYPE_BOOL: base_name = "bool"; break;
+      case TYPE_STRING: base_name = "string"; break;
+      default: base_name = "<unknown>"; break;
+    }
+
+    snprintf(buf, sizeof(buf), "%s", base_name);
+    for (int i = 0; i < depth && strlen(buf) + 2 < sizeof(buf); i++) {
+      strcat(buf, "[]");
+    }
+    return buf;
+  }
+
   switch (t) {
     case TYPE_INT: return "int";
     case TYPE_FLOAT: return "float";
     case TYPE_BOOL: return "bool";
     case TYPE_STRING: return "string";
-    case TYPE_INT_ARRAY: return "int[]";
-    case TYPE_INT2_ARRAY: return "int[][]";
-    case TYPE_FLOAT_ARRAY: return "float[]";
-    case TYPE_FLOAT2_ARRAY: return "float[][]";
-    case TYPE_BOOL_ARRAY: return "bool[]";
-    case TYPE_BOOL2_ARRAY: return "bool[][]";
-    case TYPE_STRING_ARRAY: return "string[]";
-    case TYPE_STRING2_ARRAY: return "string[][]";
     case TYPE_VOID: return "void";
     default: return "<unknown>";
   }
@@ -62,42 +75,20 @@ int type_is_numeric(TypeKind t) { return t == TYPE_INT || t == TYPE_FLOAT; }
 
 static int type_eq(TypeKind a, TypeKind b) { return a == b; }
 
-static int type_is_array(TypeKind t) {
-  return t == TYPE_INT_ARRAY || t == TYPE_INT2_ARRAY || t == TYPE_FLOAT_ARRAY ||
-         t == TYPE_FLOAT2_ARRAY || t == TYPE_BOOL_ARRAY || t == TYPE_BOOL2_ARRAY ||
-         t == TYPE_STRING_ARRAY || t == TYPE_STRING2_ARRAY;
-}
-
-static TypeKind array_of_scalar(TypeKind t) {
-  switch (t) {
-    case TYPE_INT: return TYPE_INT_ARRAY;
-    case TYPE_FLOAT: return TYPE_FLOAT_ARRAY;
-    case TYPE_BOOL: return TYPE_BOOL_ARRAY;
-    case TYPE_STRING: return TYPE_STRING_ARRAY;
-    default: return TYPE_VOID;
-  }
-}
+static int type_is_array(TypeKind t) { return ng_type_is_array(t); }
 
 static TypeKind array_elem_type(TypeKind t) {
-  switch (t) {
-    case TYPE_INT_ARRAY: return TYPE_INT;
-    case TYPE_INT2_ARRAY: return TYPE_INT_ARRAY;
-    case TYPE_FLOAT_ARRAY: return TYPE_FLOAT;
-    case TYPE_FLOAT2_ARRAY: return TYPE_FLOAT_ARRAY;
-    case TYPE_BOOL_ARRAY: return TYPE_BOOL;
-    case TYPE_BOOL2_ARRAY: return TYPE_BOOL_ARRAY;
-    case TYPE_STRING_ARRAY: return TYPE_STRING;
-    case TYPE_STRING2_ARRAY: return TYPE_STRING_ARRAY;
-    default: return TYPE_VOID;
-  }
+  if (!ng_type_is_array(t)) return TYPE_VOID;
+  TypeKind base = ng_type_array_base(t);
+  int depth = ng_type_array_depth(t);
+  if (depth <= 1) return base;
+  return ng_type_make_array(base, depth - 1);
 }
 
 static TypeKind array_of_elem(TypeKind t) {
-  if (t == TYPE_INT_ARRAY) return TYPE_INT2_ARRAY;
-  if (t == TYPE_FLOAT_ARRAY) return TYPE_FLOAT2_ARRAY;
-  if (t == TYPE_BOOL_ARRAY) return TYPE_BOOL2_ARRAY;
-  if (t == TYPE_STRING_ARRAY) return TYPE_STRING2_ARRAY;
-  return array_of_scalar(t);
+  if (t == TYPE_VOID) return TYPE_VOID;
+  if (!ng_type_is_array(t)) return ng_type_make_array(t, 1);
+  return ng_type_make_array(ng_type_array_base(t), ng_type_array_depth(t) + 1);
 }
 
 static int expr_is_empty_array_literal(const Expr *e) {

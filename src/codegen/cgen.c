@@ -45,11 +45,7 @@ static const char *c_type(TypeKind t) {
   }
 }
 
-static int cgen_type_is_array(TypeKind t) {
-  return t == TYPE_INT_ARRAY || t == TYPE_INT2_ARRAY || t == TYPE_FLOAT_ARRAY ||
-         t == TYPE_FLOAT2_ARRAY || t == TYPE_BOOL_ARRAY || t == TYPE_BOOL2_ARRAY ||
-         t == TYPE_STRING_ARRAY || t == TYPE_STRING2_ARRAY;
-}
+static int cgen_type_is_array(TypeKind t) { return ng_type_is_array(t); }
 
 static const char *op_text(int op) {
   switch (op) {

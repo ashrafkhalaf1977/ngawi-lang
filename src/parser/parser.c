@@ -119,53 +119,47 @@ static Token consume(Parser *p, TokenKind k, const char *msg) {
 }
 
 static TypeKind parse_type(Parser *p) {
+  TypeKind base = TYPE_VOID;
+
   if (match(p, TOK_KW_INT) || match(p, TOK_KW_AMBA)) {
-    if (match(p, TOK_LBRACKET)) {
-      consume(p, TOK_RBRACKET, "expected ']' in array type");
-      if (match(p, TOK_LBRACKET)) {
-        consume(p, TOK_RBRACKET, "expected ']' in nested array type");
-        return TYPE_INT2_ARRAY;
-      }
-      return TYPE_INT_ARRAY;
-    }
-    return TYPE_INT;
+    base = TYPE_INT;
+  } else if (match(p, TOK_KW_FLOAT) || match(p, TOK_KW_RUSDI)) {
+    base = TYPE_FLOAT;
+  } else if (match(p, TOK_KW_BOOL) || match(p, TOK_KW_FUAD)) {
+    base = TYPE_BOOL;
+  } else if (match(p, TOK_KW_STRING) || match(p, TOK_KW_IMUT)) {
+    base = TYPE_STRING;
+  } else if (match(p, TOK_KW_VOID)) {
+    base = TYPE_VOID;
+  } else {
+    parse_error(p, "expected type");
+    return TYPE_VOID;
   }
-  if (match(p, TOK_KW_FLOAT) || match(p, TOK_KW_RUSDI)) {
-    if (match(p, TOK_LBRACKET)) {
-      consume(p, TOK_RBRACKET, "expected ']' in array type");
-      if (match(p, TOK_LBRACKET)) {
-        consume(p, TOK_RBRACKET, "expected ']' in nested array type");
-        return TYPE_FLOAT2_ARRAY;
-      }
-      return TYPE_FLOAT_ARRAY;
+
+  int depth = 0;
+  while (match(p, TOK_LBRACKET)) {
+    consume(p, TOK_RBRACKET, "expected ']' in array type");
+    depth++;
+    if (depth > 2) {
+      parse_error(p, "array nesting depth > 2 is not supported yet");
     }
-    return TYPE_FLOAT;
-  }
-  if (match(p, TOK_KW_BOOL) || match(p, TOK_KW_FUAD)) {
-    if (match(p, TOK_LBRACKET)) {
-      consume(p, TOK_RBRACKET, "expected ']' in array type");
-      if (match(p, TOK_LBRACKET)) {
-        consume(p, TOK_RBRACKET, "expected ']' in nested array type");
-        return TYPE_BOOL2_ARRAY;
-      }
-      return TYPE_BOOL_ARRAY;
+    if (depth >= TYPE_ARRAY_STRIDE) {
+      parse_error(p, "array nesting is too deep");
+      break;
     }
-    return TYPE_BOOL;
   }
-  if (match(p, TOK_KW_STRING) || match(p, TOK_KW_IMUT)) {
-    if (match(p, TOK_LBRACKET)) {
-      consume(p, TOK_RBRACKET, "expected ']' in array type");
-      if (match(p, TOK_LBRACKET)) {
-        consume(p, TOK_RBRACKET, "expected ']' in nested array type");
-        return TYPE_STRING2_ARRAY;
-      }
-      return TYPE_STRING_ARRAY;
+
+  if (depth > 2) depth = 2;
+
+  if (depth > 0) {
+    if (base == TYPE_VOID) {
+      parse_error(p, "void[] is not allowed");
+      return TYPE_VOID;
     }
-    return TYPE_STRING;
+    return ng_type_make_array(base, depth);
   }
-  if (match(p, TOK_KW_VOID)) return TYPE_VOID;
-  parse_error(p, "expected type");
-  return TYPE_VOID;
+
+  return base;
 }
 
 static int is_assign_op(TokenKind k) {
