@@ -33,6 +33,7 @@ static const char *c_type(TypeKind t) {
     case TYPE_BOOL: return "bool";
     case TYPE_STRING: return "const char *";
     case TYPE_INT_ARRAY: return "ng_int_array_t";
+    case TYPE_INT2_ARRAY: return "ng_int2_array_t";
     case TYPE_FLOAT_ARRAY: return "ng_float_array_t";
     case TYPE_BOOL_ARRAY: return "ng_bool_array_t";
     case TYPE_STRING_ARRAY: return "ng_string_array_t";
@@ -42,8 +43,8 @@ static const char *c_type(TypeKind t) {
 }
 
 static int cgen_type_is_array(TypeKind t) {
-  return t == TYPE_INT_ARRAY || t == TYPE_FLOAT_ARRAY || t == TYPE_BOOL_ARRAY ||
-         t == TYPE_STRING_ARRAY;
+  return t == TYPE_INT_ARRAY || t == TYPE_INT2_ARRAY || t == TYPE_FLOAT_ARRAY ||
+         t == TYPE_BOOL_ARRAY || t == TYPE_STRING_ARRAY;
 }
 
 static const char *op_text(int op) {
@@ -150,7 +151,10 @@ static void emit_expr(CGen *g, Expr *e) {
     case EXPR_ARRAY_LITERAL: {
       const char *arr_type = "ng_int_array_t";
       const char *elem_type = "int64_t";
-      if (e->inferred_type == TYPE_FLOAT_ARRAY) {
+      if (e->inferred_type == TYPE_INT2_ARRAY) {
+        arr_type = "ng_int2_array_t";
+        elem_type = "ng_int_array_t";
+      } else if (e->inferred_type == TYPE_FLOAT_ARRAY) {
         arr_type = "ng_float_array_t";
         elem_type = "double";
       } else if (e->inferred_type == TYPE_BOOL_ARRAY) {
@@ -176,6 +180,8 @@ static void emit_expr(CGen *g, Expr *e) {
     case EXPR_INDEX:
       if (e->inferred_type == TYPE_INT) {
         emit(g, "ng_int_array_get(");
+      } else if (e->inferred_type == TYPE_INT_ARRAY) {
+        emit(g, "ng_int2_array_get(");
       } else if (e->inferred_type == TYPE_FLOAT) {
         emit(g, "ng_float_array_get(");
       } else if (e->inferred_type == TYPE_BOOL) {
@@ -261,6 +267,8 @@ static void emit_expr(CGen *g, Expr *e) {
         TypeKind at = e->as.call.args[0]->inferred_type;
         if (at == TYPE_INT_ARRAY) {
           emit(g, "ng_int_array_push(");
+        } else if (at == TYPE_INT2_ARRAY) {
+          emit(g, "ng_int2_array_push(");
         } else if (at == TYPE_FLOAT_ARRAY) {
           emit(g, "ng_float_array_push(");
         } else if (at == TYPE_BOOL_ARRAY) {
@@ -278,6 +286,8 @@ static void emit_expr(CGen *g, Expr *e) {
         TypeKind at = e->as.call.args[0]->inferred_type;
         if (at == TYPE_INT_ARRAY) {
           emit(g, "ng_int_array_pop(");
+        } else if (at == TYPE_INT2_ARRAY) {
+          emit(g, "ng_int2_array_pop(");
         } else if (at == TYPE_FLOAT_ARRAY) {
           emit(g, "ng_float_array_pop(");
         } else if (at == TYPE_BOOL_ARRAY) {
@@ -380,11 +390,13 @@ static void emit_for_clause_stmt(CGen *g, Stmt *st) {
         emit(g, "/* invalid indexed assignment target */");
         break;
       }
-      if (st->as.index_assign.value->inferred_type == TYPE_INT) {
+      if (st->as.index_assign.target->inferred_type == TYPE_INT_ARRAY) {
         emit(g, "ng_int_array_set(&");
-      } else if (st->as.index_assign.value->inferred_type == TYPE_FLOAT) {
+      } else if (st->as.index_assign.target->inferred_type == TYPE_INT2_ARRAY) {
+        emit(g, "ng_int2_array_set(&");
+      } else if (st->as.index_assign.target->inferred_type == TYPE_FLOAT_ARRAY) {
         emit(g, "ng_float_array_set(&");
-      } else if (st->as.index_assign.value->inferred_type == TYPE_BOOL) {
+      } else if (st->as.index_assign.target->inferred_type == TYPE_BOOL_ARRAY) {
         emit(g, "ng_bool_array_set(&");
       } else {
         emit(g, "ng_string_array_set(&");

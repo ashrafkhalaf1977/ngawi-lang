@@ -1,0 +1,15 @@
+fn main() -> amba {
+  muwani a: amba[] = [1, 2];
+  muwani b: amba[] = [3, 4, 5];
+  muwani m: amba[][] = [a, b];
+
+  m = push(m, [7, 8]);
+  m[0] = [9, 10];
+
+  muwani row: amba[] = m[0];
+  muwani x: amba = row[1];
+  muwani y: amba = m[1][2];
+
+  print(x, y, len(m));
+  return 0;
+}

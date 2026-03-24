@@ -280,6 +280,7 @@ static void test_parse_int_array(void) {
       "  let f: float[] = [1.0, 2.5];\n"
       "  let b: bool[] = [true, false];\n"
       "  let s: string[] = [\"a\", \"b\"];\n"
+      "  let m: int[][] = [[1, 2], [3, 4]];\n"
       "  a[1] = 9;\n"
       "  let x: int = a[1];\n"
       "  return x;\n"

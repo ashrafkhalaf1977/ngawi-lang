@@ -122,6 +122,10 @@ static TypeKind parse_type(Parser *p) {
   if (match(p, TOK_KW_INT) || match(p, TOK_KW_AMBA)) {
     if (match(p, TOK_LBRACKET)) {
       consume(p, TOK_RBRACKET, "expected ']' in array type");
+      if (match(p, TOK_LBRACKET)) {
+        consume(p, TOK_RBRACKET, "expected ']' in nested array type");
+        return TYPE_INT2_ARRAY;
+      }
       return TYPE_INT_ARRAY;
     }
     return TYPE_INT;

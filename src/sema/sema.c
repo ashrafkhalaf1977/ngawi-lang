@@ -46,6 +46,7 @@ const char *type_kind_name(TypeKind t) {
     case TYPE_BOOL: return "bool";
     case TYPE_STRING: return "string";
     case TYPE_INT_ARRAY: return "int[]";
+    case TYPE_INT2_ARRAY: return "int[][]";
     case TYPE_FLOAT_ARRAY: return "float[]";
     case TYPE_BOOL_ARRAY: return "bool[]";
     case TYPE_STRING_ARRAY: return "string[]";
@@ -59,8 +60,8 @@ int type_is_numeric(TypeKind t) { return t == TYPE_INT || t == TYPE_FLOAT; }
 static int type_eq(TypeKind a, TypeKind b) { return a == b; }
 
 static int type_is_array(TypeKind t) {
-  return t == TYPE_INT_ARRAY || t == TYPE_FLOAT_ARRAY || t == TYPE_BOOL_ARRAY ||
-         t == TYPE_STRING_ARRAY;
+  return t == TYPE_INT_ARRAY || t == TYPE_INT2_ARRAY || t == TYPE_FLOAT_ARRAY ||
+         t == TYPE_BOOL_ARRAY || t == TYPE_STRING_ARRAY;
 }
 
 static TypeKind array_of_scalar(TypeKind t) {
@@ -76,11 +77,17 @@ static TypeKind array_of_scalar(TypeKind t) {
 static TypeKind array_elem_type(TypeKind t) {
   switch (t) {
     case TYPE_INT_ARRAY: return TYPE_INT;
+    case TYPE_INT2_ARRAY: return TYPE_INT_ARRAY;
     case TYPE_FLOAT_ARRAY: return TYPE_FLOAT;
     case TYPE_BOOL_ARRAY: return TYPE_BOOL;
     case TYPE_STRING_ARRAY: return TYPE_STRING;
     default: return TYPE_VOID;
   }
+}
+
+static TypeKind array_of_elem(TypeKind t) {
+  if (t == TYPE_INT_ARRAY) return TYPE_INT2_ARRAY;
+  return array_of_scalar(t);
 }
 
 static int expr_is_empty_array_literal(const Expr *e) {
@@ -531,12 +538,6 @@ static TypeKind check_expr(Sema *s, Expr *e) {
         TypeKind it = check_expr(s, e->as.array_lit.items[i]);
         if (it == TYPE_VOID) continue;
 
-        if (type_is_array(it)) {
-          sema_error(s, e->as.array_lit.items[i]->line, e->as.array_lit.items[i]->col,
-                     "nested arrays are not supported yet");
-          continue;
-        }
-
         if (elem_t == TYPE_VOID) {
           elem_t = it;
           continue;
@@ -549,7 +550,7 @@ static TypeKind check_expr(Sema *s, Expr *e) {
         }
       }
 
-      TypeKind arr_t = array_of_scalar(elem_t);
+      TypeKind arr_t = array_of_elem(elem_t);
       if (arr_t == TYPE_VOID) {
         sema_error(s, e->line, e->col, "array literal element type is not supported");
         return set_expr_type(e, TYPE_VOID);

@@ -438,16 +438,20 @@ static void test_array_mvp(void) {
       "  let f: float[] = [1.5, 2.5];\n"
       "  let b: bool[] = [true, false];\n"
       "  let s: string[] = [\"a\", \"b\"];\n"
+      "  let m: int[][] = [[1, 2], [3, 4]];\n"
       "  a = push(a, 4);\n"
       "  a = pop(a);\n"
       "  s = push(s, \"c\");\n"
       "  a[1] = 99;\n"
+      "  m = push(m, [5, 6]);\n"
+      "  m[0] = [9, 10];\n"
       "  let x: int = a[1];\n"
       "  let y: float = f[0];\n"
       "  let z: bool = b[1];\n"
       "  let t: string = s[2];\n"
+      "  let q: int = m[0][1];\n"
       "  let n: int = len(a);\n"
-      "  print(x, y, z, t, n);\n"
+      "  print(x, y, z, t, q, n);\n"
       "  return 0;\n"
       "}\n";
 
@@ -467,6 +471,12 @@ static void test_array_mvp(void) {
       "fn main() -> int {\n"
       "  let b: bool[] = [true];\n"
       "  b = push(b, 1);\n"
+      "  return 0;\n"
+      "}\n";
+
+  const char *bad_nested_src =
+      "fn main() -> int {\n"
+      "  let m: int[][] = [[1, 2], [true]];\n"
       "  return 0;\n"
       "}\n";
 
@@ -520,6 +530,8 @@ static void test_array_mvp(void) {
          "float array with int element should fail");
   expect(run_program("array_bad_push.ngawi", bad_push_src, 1) != 0,
          "push should enforce element type");
+  expect(run_program("array_bad_nested.ngawi", bad_nested_src, 1) != 0,
+         "nested int[][] literals must contain int[] rows");
   expect(run_program("array_bad_index_target.ngawi", bad_index_target_src, 1) != 0,
          "indexed assignment target must be array variable");
   expect(run_program("array_bad_const_index_assign.ngawi", bad_const_index_assign_src, 1) != 0,

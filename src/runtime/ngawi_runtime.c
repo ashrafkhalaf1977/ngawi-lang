@@ -75,6 +75,10 @@ int64_t ng_int_array_get(ng_int_array_t arr, int64_t index) {
   return arr.data[ng_array_checked_index(index, arr.len)];
 }
 
+ng_int_array_t ng_int2_array_get(ng_int2_array_t arr, int64_t index) {
+  return arr.data[ng_array_checked_index(index, arr.len)];
+}
+
 double ng_float_array_get(ng_float_array_t arr, int64_t index) {
   return arr.data[ng_array_checked_index(index, arr.len)];
 }
@@ -88,6 +92,10 @@ const char *ng_string_array_get(ng_string_array_t arr, int64_t index) {
 }
 
 void ng_int_array_set(ng_int_array_t *arr, int64_t index, int64_t value) {
+  arr->data[ng_array_checked_index(index, arr->len)] = value;
+}
+
+void ng_int2_array_set(ng_int2_array_t *arr, int64_t index, ng_int_array_t value) {
   arr->data[ng_array_checked_index(index, arr->len)] = value;
 }
 
@@ -123,6 +131,29 @@ ng_int_array_t ng_int_array_pop(ng_int_array_t arr) {
   if (!out) return arr;
   memcpy(out, arr.data, (size_t)new_len * sizeof(int64_t));
   ng_int_array_t r = {out, new_len};
+  return r;
+}
+
+ng_int2_array_t ng_int2_array_push(ng_int2_array_t arr, ng_int_array_t value) {
+  int64_t new_len = arr.len + 1;
+  ng_int_array_t *out = (ng_int_array_t *)ng_runtime_alloc((size_t)new_len * sizeof(ng_int_array_t));
+  if (!out) return arr;
+  if (arr.len > 0 && arr.data) memcpy(out, arr.data, (size_t)arr.len * sizeof(ng_int_array_t));
+  out[new_len - 1] = value;
+  ng_int2_array_t r = {out, new_len};
+  return r;
+}
+
+ng_int2_array_t ng_int2_array_pop(ng_int2_array_t arr) {
+  if (arr.len <= 1 || !arr.data) {
+    ng_int2_array_t r = {NULL, 0};
+    return r;
+  }
+  int64_t new_len = arr.len - 1;
+  ng_int_array_t *out = (ng_int_array_t *)ng_runtime_alloc((size_t)new_len * sizeof(ng_int_array_t));
+  if (!out) return arr;
+  memcpy(out, arr.data, (size_t)new_len * sizeof(ng_int_array_t));
+  ng_int2_array_t r = {out, new_len};
   return r;
 }
 
