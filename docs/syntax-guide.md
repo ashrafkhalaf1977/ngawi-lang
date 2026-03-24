@@ -128,7 +128,8 @@ Current MVP supports scalar arrays (`int[]`, `float[]`, `bool[]`, `string[]`) an
 Empty array literal is supported only with explicit type context, for example:
 `let a: int[] = [];`
 Array indexing performs runtime bounds checks.
-Indexed assignment target must be an array variable (not an arbitrary expression).
+Indexed assignment target must be an array variable (for 1D) or a 2D row element access like `m[i][j]`.
+Arbitrary expression targets are not allowed.
 
 ## Operators
 
