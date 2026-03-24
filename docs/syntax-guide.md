@@ -110,12 +110,20 @@ i--;
 
 ```ngawi
 let a: int[] = [1, 2, 3];
+let f: float[] = [1.5, 2.5];
+let b: bool[] = [true, false];
+let s: string[] = ["aa", "bb"];
+
 a[1] = 9;
 let x: int = a[1];
+let y: float = f[0];
+let z: bool = b[1];
+let t: string = s[1];
 let n: int = len(a);
 ```
 
-Current MVP supports `int[]` only.
+Current MVP supports scalar arrays (`int[]`, `float[]`, `bool[]`, `string[]`).
+Empty array literal is not supported yet.
 
 ## Operators
 

@@ -54,13 +54,13 @@ Ngawi keeps base names and aliases active at the same time.
 
 ## 4. Types
 
-Ngawi currently supports builtin scalar types plus one array MVP type:
+Ngawi currently supports builtin scalar types plus array MVP types:
 
 - `int`
 - `float`
 - `bool`
 - `string`
-- `int[]` (MVP)
+- `int[]`, `float[]`, `bool[]`, `string[]` (MVP)
 - `void`
 
 Backend mapping to C11:
@@ -80,7 +80,7 @@ Supported statements:
 - top-level import directive: `import "file.ngawi";`
 - variable declaration (`let`, `const`)
 - assignment
-- indexed assignment (`a[i] = v`) for `int[]`
+- indexed assignment (`a[i] = v`) for scalar arrays
 - compound assignment (`+=`, `-=`, `*=`, `/=`, `%=`)
 - postfix increment/decrement (`x++;`, `x--;`)
 - expression statement
@@ -198,7 +198,7 @@ Rules:
 ### 9.3 string helpers
 
 - `len(s) -> int`
-  - accepts `string` and `int[]`
+  - accepts `string` and scalar arrays
 - `contains(s, sub) -> bool`
 - `starts_with(s, prefix) -> bool`
 - `ends_with(s, suffix) -> bool`
