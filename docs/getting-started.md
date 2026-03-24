@@ -35,6 +35,12 @@ Output:
 
 - `hello.c`
 
+## Check only (no codegen)
+
+```bash
+./ngawic check examples/hello.ngawi
+```
+
 ## Run full test suite
 
 ```bash
