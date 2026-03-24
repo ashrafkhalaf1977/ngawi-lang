@@ -40,6 +40,7 @@ Ngawi compiles source code to native binaries through C11.
   - print helpers
   - string helpers (`eq`, `len`, `concat`, `contains`, `starts_with`, `ends_with`, `to_lower`, `to_upper`, `trim`)
   - array helpers (`push`, `pop`, bounds-checked indexing)
+  - `pop` uses a len-only view shrink (no copy) in current runtime model
 
 Current string allocation model:
 
