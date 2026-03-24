@@ -81,6 +81,7 @@ Supported statements:
 - variable declaration (`let`, `const`)
 - assignment
 - indexed assignment (`a[i] = v`) for scalar arrays
+  - target must be an array variable identifier
 - empty array literal `[]` requires explicit array type context
 - `import` is top-level only (inside blocks is invalid)
 - compound assignment (`+=`, `-=`, `*=`, `/=`, `%=`)
