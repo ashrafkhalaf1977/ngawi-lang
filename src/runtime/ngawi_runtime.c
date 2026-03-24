@@ -148,6 +148,32 @@ static int64_t ng_next_capacity(int64_t current_cap, int64_t need_len) {
   return cap;
 }
 
+static void *ng_array_push_prepare(void *data, int64_t len, size_t elem_size) {
+  int64_t new_len = len + 1;
+  int64_t cap = ng_array_cap_get_or_len(data, len);
+
+  if (!data) {
+    int64_t next_cap = ng_next_capacity(0, new_len);
+    void *out = ng_runtime_alloc((size_t)next_cap * elem_size);
+    if (!out) return NULL;
+    if (!ng_array_cap_set(out, next_cap)) return NULL;
+    return out;
+  }
+
+  if (cap >= new_len) return data;
+
+  int64_t next_cap = ng_next_capacity(cap, new_len);
+  if (ng_runtime_ptr_is_tracked(data)) {
+    return ng_runtime_realloc(elem_size, data, next_cap);
+  }
+
+  void *out = ng_runtime_alloc((size_t)next_cap * elem_size);
+  if (!out) return NULL;
+  memcpy(out, data, (size_t)len * elem_size);
+  if (!ng_array_cap_set(out, next_cap)) return NULL;
+  return out;
+}
+
 static char *ng_runtime_string_alloc(size_t size) { return (char *)ng_runtime_alloc(size); }
 
 void ng_print_int(int64_t v) { printf("%lld", (long long)v); }
@@ -238,27 +264,8 @@ void ng_string2_array_set(ng_string2_array_t *arr, int64_t index, ng_string_arra
 
 ng_int_array_t ng_int_array_push(ng_int_array_t arr, int64_t value) {
   int64_t new_len = arr.len + 1;
-  int64_t cap = ng_array_cap_get_or_len(arr.data, arr.len);
-  int64_t next_cap = ng_next_capacity(cap, new_len);
-
-  int64_t *out = arr.data;
-  if (!out) {
-    out = (int64_t *)ng_runtime_alloc((size_t)next_cap * sizeof(int64_t));
-    if (!out) return arr;
-    if (!ng_array_cap_set(out, next_cap)) return arr;
-  } else if (cap < new_len) {
-    if (ng_runtime_ptr_is_tracked(out)) {
-      out = (int64_t *)ng_runtime_realloc(sizeof(int64_t), out, next_cap);
-      if (!out) return arr;
-    } else {
-      int64_t *next = (int64_t *)ng_runtime_alloc((size_t)next_cap * sizeof(int64_t));
-      if (!next) return arr;
-      memcpy(next, out, (size_t)arr.len * sizeof(int64_t));
-      out = next;
-      if (!ng_array_cap_set(out, next_cap)) return arr;
-    }
-  }
-
+  int64_t *out = (int64_t *)ng_array_push_prepare(arr.data, arr.len, sizeof(int64_t));
+  if (!out) return arr;
   out[new_len - 1] = value;
   ng_int_array_t r = {out, new_len};
   return r;
@@ -272,28 +279,9 @@ ng_int_array_t ng_int_array_pop(ng_int_array_t arr) {
 
 ng_int2_array_t ng_int2_array_push(ng_int2_array_t arr, ng_int_array_t value) {
   int64_t new_len = arr.len + 1;
-  int64_t cap = ng_array_cap_get_or_len(arr.data, arr.len);
-  int64_t next_cap = ng_next_capacity(cap, new_len);
-
-  ng_int_array_t *out = arr.data;
-  if (!out) {
-    out = (ng_int_array_t *)ng_runtime_alloc((size_t)next_cap * sizeof(ng_int_array_t));
-    if (!out) return arr;
-    if (!ng_array_cap_set(out, next_cap)) return arr;
-  } else if (cap < new_len) {
-    if (ng_runtime_ptr_is_tracked(out)) {
-      out = (ng_int_array_t *)ng_runtime_realloc(sizeof(ng_int_array_t), out, next_cap);
-      if (!out) return arr;
-    } else {
-      ng_int_array_t *next =
-          (ng_int_array_t *)ng_runtime_alloc((size_t)next_cap * sizeof(ng_int_array_t));
-      if (!next) return arr;
-      memcpy(next, out, (size_t)arr.len * sizeof(ng_int_array_t));
-      out = next;
-      if (!ng_array_cap_set(out, next_cap)) return arr;
-    }
-  }
-
+  ng_int_array_t *out =
+      (ng_int_array_t *)ng_array_push_prepare(arr.data, arr.len, sizeof(ng_int_array_t));
+  if (!out) return arr;
   out[new_len - 1] = value;
   ng_int2_array_t r = {out, new_len};
   return r;
@@ -307,27 +295,8 @@ ng_int2_array_t ng_int2_array_pop(ng_int2_array_t arr) {
 
 ng_float_array_t ng_float_array_push(ng_float_array_t arr, double value) {
   int64_t new_len = arr.len + 1;
-  int64_t cap = ng_array_cap_get_or_len(arr.data, arr.len);
-  int64_t next_cap = ng_next_capacity(cap, new_len);
-
-  double *out = arr.data;
-  if (!out) {
-    out = (double *)ng_runtime_alloc((size_t)next_cap * sizeof(double));
-    if (!out) return arr;
-    if (!ng_array_cap_set(out, next_cap)) return arr;
-  } else if (cap < new_len) {
-    if (ng_runtime_ptr_is_tracked(out)) {
-      out = (double *)ng_runtime_realloc(sizeof(double), out, next_cap);
-      if (!out) return arr;
-    } else {
-      double *next = (double *)ng_runtime_alloc((size_t)next_cap * sizeof(double));
-      if (!next) return arr;
-      memcpy(next, out, (size_t)arr.len * sizeof(double));
-      out = next;
-      if (!ng_array_cap_set(out, next_cap)) return arr;
-    }
-  }
-
+  double *out = (double *)ng_array_push_prepare(arr.data, arr.len, sizeof(double));
+  if (!out) return arr;
   out[new_len - 1] = value;
   ng_float_array_t r = {out, new_len};
   return r;
@@ -341,28 +310,9 @@ ng_float_array_t ng_float_array_pop(ng_float_array_t arr) {
 
 ng_float2_array_t ng_float2_array_push(ng_float2_array_t arr, ng_float_array_t value) {
   int64_t new_len = arr.len + 1;
-  int64_t cap = ng_array_cap_get_or_len(arr.data, arr.len);
-  int64_t next_cap = ng_next_capacity(cap, new_len);
-
-  ng_float_array_t *out = arr.data;
-  if (!out) {
-    out = (ng_float_array_t *)ng_runtime_alloc((size_t)next_cap * sizeof(ng_float_array_t));
-    if (!out) return arr;
-    if (!ng_array_cap_set(out, next_cap)) return arr;
-  } else if (cap < new_len) {
-    if (ng_runtime_ptr_is_tracked(out)) {
-      out = (ng_float_array_t *)ng_runtime_realloc(sizeof(ng_float_array_t), out, next_cap);
-      if (!out) return arr;
-    } else {
-      ng_float_array_t *next =
-          (ng_float_array_t *)ng_runtime_alloc((size_t)next_cap * sizeof(ng_float_array_t));
-      if (!next) return arr;
-      memcpy(next, out, (size_t)arr.len * sizeof(ng_float_array_t));
-      out = next;
-      if (!ng_array_cap_set(out, next_cap)) return arr;
-    }
-  }
-
+  ng_float_array_t *out =
+      (ng_float_array_t *)ng_array_push_prepare(arr.data, arr.len, sizeof(ng_float_array_t));
+  if (!out) return arr;
   out[new_len - 1] = value;
   ng_float2_array_t r = {out, new_len};
   return r;
@@ -376,27 +326,8 @@ ng_float2_array_t ng_float2_array_pop(ng_float2_array_t arr) {
 
 ng_bool_array_t ng_bool_array_push(ng_bool_array_t arr, bool value) {
   int64_t new_len = arr.len + 1;
-  int64_t cap = ng_array_cap_get_or_len(arr.data, arr.len);
-  int64_t next_cap = ng_next_capacity(cap, new_len);
-
-  bool *out = arr.data;
-  if (!out) {
-    out = (bool *)ng_runtime_alloc((size_t)next_cap * sizeof(bool));
-    if (!out) return arr;
-    if (!ng_array_cap_set(out, next_cap)) return arr;
-  } else if (cap < new_len) {
-    if (ng_runtime_ptr_is_tracked(out)) {
-      out = (bool *)ng_runtime_realloc(sizeof(bool), out, next_cap);
-      if (!out) return arr;
-    } else {
-      bool *next = (bool *)ng_runtime_alloc((size_t)next_cap * sizeof(bool));
-      if (!next) return arr;
-      memcpy(next, out, (size_t)arr.len * sizeof(bool));
-      out = next;
-      if (!ng_array_cap_set(out, next_cap)) return arr;
-    }
-  }
-
+  bool *out = (bool *)ng_array_push_prepare(arr.data, arr.len, sizeof(bool));
+  if (!out) return arr;
   out[new_len - 1] = value;
   ng_bool_array_t r = {out, new_len};
   return r;
@@ -410,28 +341,9 @@ ng_bool_array_t ng_bool_array_pop(ng_bool_array_t arr) {
 
 ng_bool2_array_t ng_bool2_array_push(ng_bool2_array_t arr, ng_bool_array_t value) {
   int64_t new_len = arr.len + 1;
-  int64_t cap = ng_array_cap_get_or_len(arr.data, arr.len);
-  int64_t next_cap = ng_next_capacity(cap, new_len);
-
-  ng_bool_array_t *out = arr.data;
-  if (!out) {
-    out = (ng_bool_array_t *)ng_runtime_alloc((size_t)next_cap * sizeof(ng_bool_array_t));
-    if (!out) return arr;
-    if (!ng_array_cap_set(out, next_cap)) return arr;
-  } else if (cap < new_len) {
-    if (ng_runtime_ptr_is_tracked(out)) {
-      out = (ng_bool_array_t *)ng_runtime_realloc(sizeof(ng_bool_array_t), out, next_cap);
-      if (!out) return arr;
-    } else {
-      ng_bool_array_t *next =
-          (ng_bool_array_t *)ng_runtime_alloc((size_t)next_cap * sizeof(ng_bool_array_t));
-      if (!next) return arr;
-      memcpy(next, out, (size_t)arr.len * sizeof(ng_bool_array_t));
-      out = next;
-      if (!ng_array_cap_set(out, next_cap)) return arr;
-    }
-  }
-
+  ng_bool_array_t *out =
+      (ng_bool_array_t *)ng_array_push_prepare(arr.data, arr.len, sizeof(ng_bool_array_t));
+  if (!out) return arr;
   out[new_len - 1] = value;
   ng_bool2_array_t r = {out, new_len};
   return r;
@@ -445,28 +357,9 @@ ng_bool2_array_t ng_bool2_array_pop(ng_bool2_array_t arr) {
 
 ng_string_array_t ng_string_array_push(ng_string_array_t arr, const char *value) {
   int64_t new_len = arr.len + 1;
-  int64_t cap = ng_array_cap_get_or_len(arr.data, arr.len);
-  int64_t next_cap = ng_next_capacity(cap, new_len);
-
-  const char **out = arr.data;
-  if (!out) {
-    out = (const char **)ng_runtime_alloc((size_t)next_cap * sizeof(const char *));
-    if (!out) return arr;
-    if (!ng_array_cap_set((void *)out, next_cap)) return arr;
-  } else if (cap < new_len) {
-    if (ng_runtime_ptr_is_tracked((void *)out)) {
-      out = (const char **)ng_runtime_realloc(sizeof(const char *), (void *)out, next_cap);
-      if (!out) return arr;
-    } else {
-      const char **next =
-          (const char **)ng_runtime_alloc((size_t)next_cap * sizeof(const char *));
-      if (!next) return arr;
-      memcpy((void *)next, (const void *)out, (size_t)arr.len * sizeof(const char *));
-      out = next;
-      if (!ng_array_cap_set((void *)out, next_cap)) return arr;
-    }
-  }
-
+  const char **out =
+      (const char **)ng_array_push_prepare((void *)arr.data, arr.len, sizeof(const char *));
+  if (!out) return arr;
   out[new_len - 1] = value;
   ng_string_array_t r = {out, new_len};
   return r;
@@ -480,28 +373,9 @@ ng_string_array_t ng_string_array_pop(ng_string_array_t arr) {
 
 ng_string2_array_t ng_string2_array_push(ng_string2_array_t arr, ng_string_array_t value) {
   int64_t new_len = arr.len + 1;
-  int64_t cap = ng_array_cap_get_or_len(arr.data, arr.len);
-  int64_t next_cap = ng_next_capacity(cap, new_len);
-
-  ng_string_array_t *out = arr.data;
-  if (!out) {
-    out = (ng_string_array_t *)ng_runtime_alloc((size_t)next_cap * sizeof(ng_string_array_t));
-    if (!out) return arr;
-    if (!ng_array_cap_set(out, next_cap)) return arr;
-  } else if (cap < new_len) {
-    if (ng_runtime_ptr_is_tracked(out)) {
-      out = (ng_string_array_t *)ng_runtime_realloc(sizeof(ng_string_array_t), out, next_cap);
-      if (!out) return arr;
-    } else {
-      ng_string_array_t *next =
-          (ng_string_array_t *)ng_runtime_alloc((size_t)next_cap * sizeof(ng_string_array_t));
-      if (!next) return arr;
-      memcpy(next, out, (size_t)arr.len * sizeof(ng_string_array_t));
-      out = next;
-      if (!ng_array_cap_set(out, next_cap)) return arr;
-    }
-  }
-
+  ng_string_array_t *out =
+      (ng_string_array_t *)ng_array_push_prepare(arr.data, arr.len, sizeof(ng_string_array_t));
+  if (!out) return arr;
   out[new_len - 1] = value;
   ng_string2_array_t r = {out, new_len};
   return r;
