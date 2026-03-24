@@ -45,6 +45,7 @@ const char *type_kind_name(TypeKind t) {
     case TYPE_FLOAT: return "float";
     case TYPE_BOOL: return "bool";
     case TYPE_STRING: return "string";
+    case TYPE_INT_ARRAY: return "int[]";
     case TYPE_VOID: return "void";
     default: return "<unknown>";
   }
@@ -294,8 +295,8 @@ static TypeKind check_call(Sema *s, Expr *e) {
     }
     TypeKind at = check_expr(s, e->as.call.args[0]);
     if (at == TYPE_VOID) return set_expr_type(e, TYPE_VOID);
-    if (!type_eq(at, TYPE_STRING)) {
-      sema_error(s, e->line, e->col, "len expects string, got '%s'", type_kind_name(at));
+    if (!type_eq(at, TYPE_STRING) && !type_eq(at, TYPE_INT_ARRAY)) {
+      sema_error(s, e->line, e->col, "len expects string or int[], got '%s'", type_kind_name(at));
       return set_expr_type(e, TYPE_VOID);
     }
     return set_expr_type(e, TYPE_INT);
@@ -449,6 +450,36 @@ static TypeKind check_expr(Sema *s, Expr *e) {
         return set_expr_type(e, TYPE_VOID);
       }
       return set_expr_type(e, v->type);
+    }
+    case EXPR_ARRAY_LITERAL: {
+      if (e->as.array_lit.count == 0) {
+        sema_error(s, e->line, e->col, "empty array literal is not supported yet");
+        return set_expr_type(e, TYPE_VOID);
+      }
+      for (size_t i = 0; i < e->as.array_lit.count; i++) {
+        TypeKind it = check_expr(s, e->as.array_lit.items[i]);
+        if (it == TYPE_VOID) continue;
+        if (!type_eq(it, TYPE_INT)) {
+          sema_error(s, e->as.array_lit.items[i]->line, e->as.array_lit.items[i]->col,
+                     "int[] literal expects int elements, got '%s'", type_kind_name(it));
+        }
+      }
+      return set_expr_type(e, TYPE_INT_ARRAY);
+    }
+    case EXPR_INDEX: {
+      TypeKind tt = check_expr(s, e->as.index.target);
+      TypeKind it = check_expr(s, e->as.index.index);
+      if (tt == TYPE_VOID || it == TYPE_VOID) return set_expr_type(e, TYPE_VOID);
+      if (!type_eq(tt, TYPE_INT_ARRAY)) {
+        sema_error(s, e->line, e->col, "indexing expects int[] target, got '%s'",
+                   type_kind_name(tt));
+        return set_expr_type(e, TYPE_VOID);
+      }
+      if (!type_eq(it, TYPE_INT)) {
+        sema_error(s, e->line, e->col, "array index must be int, got '%s'", type_kind_name(it));
+        return set_expr_type(e, TYPE_VOID);
+      }
+      return set_expr_type(e, TYPE_INT);
     }
     case EXPR_CALL:
       return check_call(s, e);

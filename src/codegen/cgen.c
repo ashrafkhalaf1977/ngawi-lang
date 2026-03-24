@@ -32,6 +32,7 @@ static const char *c_type(TypeKind t) {
     case TYPE_FLOAT: return "double";
     case TYPE_BOOL: return "bool";
     case TYPE_STRING: return "const char *";
+    case TYPE_INT_ARRAY: return "ng_int_array_t";
     case TYPE_VOID: return "void";
     default: return "void";
   }
@@ -138,6 +139,21 @@ static void emit_expr(CGen *g, Expr *e) {
     case EXPR_IDENT:
       emit(g, e->as.ident_name);
       break;
+    case EXPR_ARRAY_LITERAL:
+      emit(g, "(ng_int_array_t){.data=(int64_t[]){");
+      for (size_t i = 0; i < e->as.array_lit.count; i++) {
+        if (i > 0) emit(g, ", ");
+        emit_expr(g, e->as.array_lit.items[i]);
+      }
+      emitf(g, "}, .len=%lld}", (long long)e->as.array_lit.count);
+      break;
+    case EXPR_INDEX:
+      emit(g, "((");
+      emit_expr(g, e->as.index.target);
+      emit(g, ").data[");
+      emit_expr(g, e->as.index.index);
+      emit(g, "])");
+      break;
     case EXPR_UNARY:
       emit(g, "(");
       emit(g, op_text(e->as.unary.op));
@@ -195,9 +211,16 @@ static void emit_expr(CGen *g, Expr *e) {
         break;
       }
       if (strcmp(e->as.call.name, "len") == 0 && e->as.call.arg_count == 1) {
-        emit(g, "ng_string_len(");
-        emit_expr(g, e->as.call.args[0]);
-        emit(g, ")");
+        Expr *arg = e->as.call.args[0];
+        if (arg->inferred_type == TYPE_INT_ARRAY) {
+          emit(g, "((");
+          emit_expr(g, arg);
+          emit(g, ").len)");
+        } else {
+          emit(g, "ng_string_len(");
+          emit_expr(g, arg);
+          emit(g, ")");
+        }
         break;
       }
       if (strcmp(e->as.call.name, "contains") == 0 && e->as.call.arg_count == 2) {

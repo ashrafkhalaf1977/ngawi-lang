@@ -9,6 +9,7 @@ typedef enum TypeKind {
   TYPE_FLOAT,
   TYPE_BOOL,
   TYPE_STRING,
+  TYPE_INT_ARRAY,
   TYPE_VOID,
 } TypeKind;
 
@@ -21,6 +22,8 @@ typedef enum ExprKind {
   EXPR_STRING,
   EXPR_BOOL,
   EXPR_IDENT,
+  EXPR_ARRAY_LITERAL,
+  EXPR_INDEX,
   EXPR_UNARY,
   EXPR_BINARY,
   EXPR_CALL,
@@ -37,6 +40,14 @@ struct Expr {
     int bool_val;
     char *string_val;
     char *ident_name;
+    struct {
+      Expr **items;
+      size_t count;
+    } array_lit;
+    struct {
+      Expr *target;
+      Expr *index;
+    } index;
     struct {
       int op;
       Expr *expr;

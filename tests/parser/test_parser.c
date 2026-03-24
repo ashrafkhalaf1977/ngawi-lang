@@ -273,6 +273,22 @@ static void test_parse_import_toplevel(void) {
   program_free(p);
 }
 
+static void test_parse_int_array(void) {
+  const char *src =
+      "fn main() -> int {\n"
+      "  let a: int[] = [1, 2, 3];\n"
+      "  let x: int = a[1];\n"
+      "  return x;\n"
+      "}\n";
+
+  int had_error = 0;
+  Program *p = parse_program("arr.ngawi", src, &had_error);
+  expect(had_error == 0, "int array parse should succeed");
+  expect(p != NULL, "array program not null");
+  expect(p->func_count == 1, "array one function expected");
+  program_free(p);
+}
+
 static void test_parse_invalid_import_syntax(void) {
   const char *src =
       "import lib.ngawi;\n"
@@ -317,6 +333,7 @@ int main(void) {
   test_parse_for_loop();
   test_parse_break_continue();
   test_parse_import_toplevel();
+  test_parse_int_array();
   test_parse_invalid_import_syntax();
   test_parse_recovery_keeps_following_functions();
 

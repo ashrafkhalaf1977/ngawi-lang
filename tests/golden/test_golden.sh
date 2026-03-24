@@ -26,6 +26,7 @@ cases=(
   "match_bool:examples/match_bool.ngawi"
   "match_string:examples/match_string.ngawi"
   "string_builtins:examples/string_builtins.ngawi"
+  "array_int:examples/array_int.ngawi"
   "import_main:examples/import_main.ngawi"
 )
 

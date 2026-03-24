@@ -431,6 +431,36 @@ static void test_match_rules(void) {
          "bool match without false arm or wildcard should fail");
 }
 
+static void test_array_mvp(void) {
+  const char *ok_src =
+      "fn main() -> int {\n"
+      "  let a: int[] = [1, 2, 3];\n"
+      "  let x: int = a[1];\n"
+      "  let n: int = len(a);\n"
+      "  print(x, n);\n"
+      "  return 0;\n"
+      "}\n";
+
+  const char *bad_elem_src =
+      "fn main() -> int {\n"
+      "  let a: int[] = [1, true];\n"
+      "  return 0;\n"
+      "}\n";
+
+  const char *bad_index_src =
+      "fn main() -> int {\n"
+      "  let a: int[] = [1, 2];\n"
+      "  let x = a[false];\n"
+      "  return 0;\n"
+      "}\n";
+
+  expect(run_program("array_ok.ngawi", ok_src, 0) == 0, "int array read/len should pass");
+  expect(run_program("array_bad_elem.ngawi", bad_elem_src, 1) != 0,
+         "int array with non-int element should fail");
+  expect(run_program("array_bad_index.ngawi", bad_index_src, 1) != 0,
+         "array index must be int");
+}
+
 static void test_missing_main(void) {
   const char *src =
       "fn nope() -> int {\n"
@@ -452,6 +482,7 @@ int main(void) {
   test_len_builtin();
   test_string_builtins();
   test_match_rules();
+  test_array_mvp();
   test_break_continue_scope();
   test_missing_main();
 

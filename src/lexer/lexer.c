@@ -211,6 +211,8 @@ Token lexer_next(Lexer *lx) {
     case ')': return make_single(lx, TOK_RPAREN, start, line, col);
     case '{': return make_single(lx, TOK_LBRACE, start, line, col);
     case '}': return make_single(lx, TOK_RBRACE, start, line, col);
+    case '[': return make_single(lx, TOK_LBRACKET, start, line, col);
+    case ']': return make_single(lx, TOK_RBRACKET, start, line, col);
     case ',': return make_single(lx, TOK_COMMA, start, line, col);
     case ':': return make_single(lx, TOK_COLON, start, line, col);
     case ';': return make_single(lx, TOK_SEMI, start, line, col);
@@ -280,6 +282,8 @@ const char *token_kind_name(TokenKind kind) {
     case TOK_RPAREN: return "RPAREN";
     case TOK_LBRACE: return "LBRACE";
     case TOK_RBRACE: return "RBRACE";
+    case TOK_LBRACKET: return "LBRACKET";
+    case TOK_RBRACKET: return "RBRACKET";
     case TOK_COMMA: return "COMMA";
     case TOK_COLON: return "COLON";
     case TOK_SEMI: return "SEMI";

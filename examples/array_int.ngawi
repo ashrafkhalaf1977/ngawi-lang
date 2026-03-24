@@ -1,0 +1,7 @@
+fn main() -> amba {
+  muwani a: amba[] = [10, 20, 30];
+  muwani x: amba = a[1];
+  muwani n: amba = len(a);
+  print(x, n);
+  return 0;
+}

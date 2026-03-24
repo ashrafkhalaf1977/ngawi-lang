@@ -119,7 +119,13 @@ static Token consume(Parser *p, TokenKind k, const char *msg) {
 }
 
 static TypeKind parse_type(Parser *p) {
-  if (match(p, TOK_KW_INT) || match(p, TOK_KW_AMBA)) return TYPE_INT;
+  if (match(p, TOK_KW_INT) || match(p, TOK_KW_AMBA)) {
+    if (match(p, TOK_LBRACKET)) {
+      consume(p, TOK_RBRACKET, "expected ']' in array type");
+      return TYPE_INT_ARRAY;
+    }
+    return TYPE_INT;
+  }
   if (match(p, TOK_KW_FLOAT) || match(p, TOK_KW_RUSDI)) return TYPE_FLOAT;
   if (match(p, TOK_KW_BOOL) || match(p, TOK_KW_FUAD)) return TYPE_BOOL;
   if (match(p, TOK_KW_STRING) || match(p, TOK_KW_IMUT)) return TYPE_STRING;
@@ -259,6 +265,25 @@ static Expr *parse_primary(Parser *p) {
     return e;
   }
 
+  if (match(p, TOK_LBRACKET)) {
+    Expr *e = new_expr(EXPR_ARRAY_LITERAL, t.line, t.col);
+    e->as.array_lit.items = NULL;
+    e->as.array_lit.count = 0;
+
+    if (!check(p, TOK_RBRACKET)) {
+      for (;;) {
+        Expr *item = parse_expression(p);
+        e->as.array_lit.items =
+            (Expr **)xrealloc(e->as.array_lit.items, e->as.array_lit.count + 1, sizeof(Expr *));
+        e->as.array_lit.items[e->as.array_lit.count++] = item;
+        if (!match(p, TOK_COMMA)) break;
+      }
+    }
+
+    consume(p, TOK_RBRACKET, "expected ']' after array literal");
+    return e;
+  }
+
   if (match(p, TOK_IDENT)) {
     char *name = dup_lexeme(&t);
     if (match(p, TOK_LPAREN)) {
@@ -295,6 +320,22 @@ static Expr *parse_primary(Parser *p) {
   return new_expr(EXPR_INT, t.line, t.col);
 }
 
+static Expr *parse_postfix(Parser *p) {
+  Expr *e = parse_primary(p);
+  while (check(p, TOK_LBRACKET)) {
+    Token lb = p->cur;
+    advance(p);
+    Expr *idx = parse_expression(p);
+    consume(p, TOK_RBRACKET, "expected ']' after index expression");
+
+    Expr *ix = new_expr(EXPR_INDEX, lb.line, lb.col);
+    ix->as.index.target = e;
+    ix->as.index.index = idx;
+    e = ix;
+  }
+  return e;
+}
+
 static Expr *parse_unary(Parser *p) {
   if (check(p, TOK_BANG) || check(p, TOK_MINUS)) {
     Token op = p->cur;
@@ -305,7 +346,7 @@ static Expr *parse_unary(Parser *p) {
     e->as.unary.expr = rhs;
     return e;
   }
-  return parse_primary(p);
+  return parse_postfix(p);
 }
 
 static Expr *parse_factor(Parser *p) {
@@ -775,6 +816,14 @@ static void expr_free(Expr *e) {
   switch (e->kind) {
     case EXPR_STRING: free(e->as.string_val); break;
     case EXPR_IDENT: free(e->as.ident_name); break;
+    case EXPR_ARRAY_LITERAL:
+      for (size_t i = 0; i < e->as.array_lit.count; i++) expr_free(e->as.array_lit.items[i]);
+      free(e->as.array_lit.items);
+      break;
+    case EXPR_INDEX:
+      expr_free(e->as.index.target);
+      expr_free(e->as.index.index);
+      break;
     case EXPR_UNARY: expr_free(e->as.unary.expr); break;
     case EXPR_BINARY:
       expr_free(e->as.binary.left);

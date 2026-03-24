@@ -4,6 +4,11 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+typedef struct ng_int_array_t {
+  int64_t *data;
+  int64_t len;
+} ng_int_array_t;
+
 void ng_print_int(int64_t v);
 void ng_print_float(double v);
 void ng_print_bool(bool v);
