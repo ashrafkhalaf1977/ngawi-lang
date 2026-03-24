@@ -417,33 +417,64 @@ static void emit_for_clause_stmt(CGen *g, Stmt *st) {
       break;
 
     case STMT_INDEX_ASSIGN:
-      if (st->as.index_assign.target->kind != EXPR_IDENT) {
-        emit(g, "/* invalid indexed assignment target */");
+      if (st->as.index_assign.target->kind == EXPR_IDENT) {
+        if (st->as.index_assign.target->inferred_type == TYPE_INT_ARRAY) {
+          emit(g, "ng_int_array_set(&");
+        } else if (st->as.index_assign.target->inferred_type == TYPE_INT2_ARRAY) {
+          emit(g, "ng_int2_array_set(&");
+        } else if (st->as.index_assign.target->inferred_type == TYPE_FLOAT_ARRAY) {
+          emit(g, "ng_float_array_set(&");
+        } else if (st->as.index_assign.target->inferred_type == TYPE_FLOAT2_ARRAY) {
+          emit(g, "ng_float2_array_set(&");
+        } else if (st->as.index_assign.target->inferred_type == TYPE_BOOL_ARRAY) {
+          emit(g, "ng_bool_array_set(&");
+        } else if (st->as.index_assign.target->inferred_type == TYPE_BOOL2_ARRAY) {
+          emit(g, "ng_bool2_array_set(&");
+        } else if (st->as.index_assign.target->inferred_type == TYPE_STRING_ARRAY) {
+          emit(g, "ng_string_array_set(&");
+        } else {
+          emit(g, "ng_string2_array_set(&");
+        }
+        emit(g, st->as.index_assign.target->as.ident_name);
+        emit(g, ", (int64_t)(");
+        emit_expr(g, st->as.index_assign.index);
+        emit(g, "), ");
+        emit_expr(g, st->as.index_assign.value);
+        emit(g, ")");
         break;
       }
-      if (st->as.index_assign.target->inferred_type == TYPE_INT_ARRAY) {
-        emit(g, "ng_int_array_set(&");
-      } else if (st->as.index_assign.target->inferred_type == TYPE_INT2_ARRAY) {
-        emit(g, "ng_int2_array_set(&");
-      } else if (st->as.index_assign.target->inferred_type == TYPE_FLOAT_ARRAY) {
-        emit(g, "ng_float_array_set(&");
-      } else if (st->as.index_assign.target->inferred_type == TYPE_FLOAT2_ARRAY) {
-        emit(g, "ng_float2_array_set(&");
-      } else if (st->as.index_assign.target->inferred_type == TYPE_BOOL_ARRAY) {
-        emit(g, "ng_bool_array_set(&");
-      } else if (st->as.index_assign.target->inferred_type == TYPE_BOOL2_ARRAY) {
-        emit(g, "ng_bool2_array_set(&");
-      } else if (st->as.index_assign.target->inferred_type == TYPE_STRING_ARRAY) {
-        emit(g, "ng_string_array_set(&");
-      } else {
-        emit(g, "ng_string2_array_set(&");
+
+      if (st->as.index_assign.target->kind == EXPR_INDEX &&
+          st->as.index_assign.target->as.index.target &&
+          st->as.index_assign.target->as.index.target->kind == EXPR_IDENT) {
+        const char *base = st->as.index_assign.target->as.index.target->as.ident_name;
+        Expr *row_idx = st->as.index_assign.target->as.index.index;
+
+        if (st->as.index_assign.target->inferred_type == TYPE_INT_ARRAY) {
+          emit(g, "ng_int_array_set(&");
+        } else if (st->as.index_assign.target->inferred_type == TYPE_FLOAT_ARRAY) {
+          emit(g, "ng_float_array_set(&");
+        } else if (st->as.index_assign.target->inferred_type == TYPE_BOOL_ARRAY) {
+          emit(g, "ng_bool_array_set(&");
+        } else {
+          emit(g, "ng_string_array_set(&");
+        }
+
+        emit(g, base);
+        emit(g, ".data[ng_array_checked_index((int64_t)(");
+        emit_expr(g, row_idx);
+        emit(g, "), ");
+        emit(g, base);
+        emit(g, ".len)]");
+        emit(g, ", (int64_t)(");
+        emit_expr(g, st->as.index_assign.index);
+        emit(g, "), ");
+        emit_expr(g, st->as.index_assign.value);
+        emit(g, ")");
+        break;
       }
-      emit(g, st->as.index_assign.target->as.ident_name);
-      emit(g, ", (int64_t)(");
-      emit_expr(g, st->as.index_assign.index);
-      emit(g, "), ");
-      emit_expr(g, st->as.index_assign.value);
-      emit(g, ")");
+
+      emit(g, "/* invalid indexed assignment target */");
       break;
 
     case STMT_EXPR:

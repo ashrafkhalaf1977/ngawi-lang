@@ -785,14 +785,26 @@ static void check_stmt(Sema *s, Stmt *st) {
       TypeKind it = check_expr(s, st->as.index_assign.index);
       TypeKind vt = check_expr(s, st->as.index_assign.value);
 
-      if (st->as.index_assign.target->kind != EXPR_IDENT) {
+      const char *base_name = NULL;
+      Expr *target = st->as.index_assign.target;
+      int target_ok = 0;
+
+      if (target->kind == EXPR_IDENT) {
+        base_name = target->as.ident_name;
+        target_ok = 1;
+      } else if (target->kind == EXPR_INDEX && target->as.index.target &&
+                 target->as.index.target->kind == EXPR_IDENT) {
+        base_name = target->as.index.target->as.ident_name;
+        target_ok = 1;
+      }
+
+      if (!target_ok) {
         sema_error(s, st->line, st->col,
-                   "indexed assignment target must be an array variable identifier");
+                   "indexed assignment target must be array variable or 2D array element");
       } else {
-        VarSymbol *v = lookup_var(s, st->as.index_assign.target->as.ident_name);
+        VarSymbol *v = lookup_var(s, base_name);
         if (v && v->is_const) {
-          sema_error(s, st->line, st->col, "cannot assign through const variable '%s'",
-                     st->as.index_assign.target->as.ident_name);
+          sema_error(s, st->line, st->col, "cannot assign through const variable '%s'", base_name);
         }
       }
 
