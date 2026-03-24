@@ -94,6 +94,7 @@ run_case examples/import_main.ngawi e2e_import "7"
 run_case examples/import_nested_main.ngawi e2e_import_nested "7"
 run_case examples/import_duplicate_main.ngawi e2e_import_dup "18"
 run_runtime_fail_case examples/array_oob.ngawi e2e_array_oob
+run_runtime_fail_case examples/array_pop_empty.ngawi e2e_array_pop_empty
 run_fail_case examples/import_cycle_main.ngawi e2e_import_cycle
 run_fail_case examples/import_missing_main.ngawi e2e_import_missing
 run_fail_case examples/import_bad_syntax_main.ngawi e2e_import_bad_syntax

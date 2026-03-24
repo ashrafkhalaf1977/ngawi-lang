@@ -62,6 +62,11 @@ void ng_print_bool(bool v) { fputs(v ? "true" : "false", stdout); }
 
 void ng_print_string(const char *s) { fputs(s ? s : "", stdout); }
 
+static void ng_runtime_error(const char *msg) {
+  fprintf(stderr, "runtime error: %s\n", msg);
+  exit(1);
+}
+
 int64_t ng_array_checked_index(int64_t index, int64_t len) {
   if (index < 0 || index >= len) {
     fprintf(stderr, "runtime error: array index out of bounds (index=%lld, len=%lld)\n",
@@ -146,7 +151,8 @@ ng_int_array_t ng_int_array_push(ng_int_array_t arr, int64_t value) {
 }
 
 ng_int_array_t ng_int_array_pop(ng_int_array_t arr) {
-  if (arr.len <= 1 || !arr.data) {
+  if (arr.len <= 0) ng_runtime_error("pop() on empty int[]");
+  if (arr.len == 1 || !arr.data) {
     ng_int_array_t r = {NULL, 0};
     return r;
   }
@@ -169,7 +175,8 @@ ng_int2_array_t ng_int2_array_push(ng_int2_array_t arr, ng_int_array_t value) {
 }
 
 ng_int2_array_t ng_int2_array_pop(ng_int2_array_t arr) {
-  if (arr.len <= 1 || !arr.data) {
+  if (arr.len <= 0) ng_runtime_error("pop() on empty int[][]");
+  if (arr.len == 1 || !arr.data) {
     ng_int2_array_t r = {NULL, 0};
     return r;
   }
@@ -192,7 +199,8 @@ ng_float_array_t ng_float_array_push(ng_float_array_t arr, double value) {
 }
 
 ng_float_array_t ng_float_array_pop(ng_float_array_t arr) {
-  if (arr.len <= 1 || !arr.data) {
+  if (arr.len <= 0) ng_runtime_error("pop() on empty float[]");
+  if (arr.len == 1 || !arr.data) {
     ng_float_array_t r = {NULL, 0};
     return r;
   }
@@ -215,7 +223,8 @@ ng_float2_array_t ng_float2_array_push(ng_float2_array_t arr, ng_float_array_t v
 }
 
 ng_float2_array_t ng_float2_array_pop(ng_float2_array_t arr) {
-  if (arr.len <= 1 || !arr.data) {
+  if (arr.len <= 0) ng_runtime_error("pop() on empty float[][]");
+  if (arr.len == 1 || !arr.data) {
     ng_float2_array_t r = {NULL, 0};
     return r;
   }
@@ -238,7 +247,8 @@ ng_bool_array_t ng_bool_array_push(ng_bool_array_t arr, bool value) {
 }
 
 ng_bool_array_t ng_bool_array_pop(ng_bool_array_t arr) {
-  if (arr.len <= 1 || !arr.data) {
+  if (arr.len <= 0) ng_runtime_error("pop() on empty bool[]");
+  if (arr.len == 1 || !arr.data) {
     ng_bool_array_t r = {NULL, 0};
     return r;
   }
@@ -261,7 +271,8 @@ ng_bool2_array_t ng_bool2_array_push(ng_bool2_array_t arr, ng_bool_array_t value
 }
 
 ng_bool2_array_t ng_bool2_array_pop(ng_bool2_array_t arr) {
-  if (arr.len <= 1 || !arr.data) {
+  if (arr.len <= 0) ng_runtime_error("pop() on empty bool[][]");
+  if (arr.len == 1 || !arr.data) {
     ng_bool2_array_t r = {NULL, 0};
     return r;
   }
@@ -284,7 +295,8 @@ ng_string_array_t ng_string_array_push(ng_string_array_t arr, const char *value)
 }
 
 ng_string_array_t ng_string_array_pop(ng_string_array_t arr) {
-  if (arr.len <= 1 || !arr.data) {
+  if (arr.len <= 0) ng_runtime_error("pop() on empty string[]");
+  if (arr.len == 1 || !arr.data) {
     ng_string_array_t r = {NULL, 0};
     return r;
   }
@@ -309,7 +321,8 @@ ng_string2_array_t ng_string2_array_push(ng_string2_array_t arr, ng_string_array
 }
 
 ng_string2_array_t ng_string2_array_pop(ng_string2_array_t arr) {
-  if (arr.len <= 1 || !arr.data) {
+  if (arr.len <= 0) ng_runtime_error("pop() on empty string[][]");
+  if (arr.len == 1 || !arr.data) {
     ng_string2_array_t r = {NULL, 0};
     return r;
   }
