@@ -840,10 +840,22 @@ Program *parse_program(const char *file, const char *source, int *had_error) {
 
   Program *prog = (Program *)xcalloc(1, sizeof(Program));
   int seen_function = 0;
+  const char *first_fn_name = NULL;
+  int first_fn_line = 0;
+
   while (!check(&p, TOK_EOF) && !p.stop_parsing) {
     if (check(&p, TOK_KW_IMPORT)) {
       if (seen_function) {
-        parse_error(&p, "import declarations must appear before function declarations");
+        char msg[256];
+        if (first_fn_name) {
+          snprintf(msg, sizeof(msg),
+                   "import declarations must appear before function declarations (first function '%s' starts at line %d)",
+                   first_fn_name, first_fn_line);
+        } else {
+          snprintf(msg, sizeof(msg),
+                   "import declarations must appear before function declarations");
+        }
+        parse_error(&p, msg);
         advance(&p);
         if (check(&p, TOK_STRING_LIT)) advance(&p);
         if (check(&p, TOK_SEMI)) advance(&p);
@@ -865,8 +877,12 @@ Program *parse_program(const char *file, const char *source, int *had_error) {
       continue;
     }
 
-    seen_function = 1;
     FunctionDecl fn = parse_function(&p);
+    if (!seen_function) {
+      seen_function = 1;
+      first_fn_name = fn.name;
+      first_fn_line = fn.body ? fn.body->line : 1;
+    }
     prog->funcs = (FunctionDecl *)xrealloc(prog->funcs, prog->func_count + 1,
                                            sizeof(FunctionDecl));
     prog->funcs[prog->func_count++] = fn;
