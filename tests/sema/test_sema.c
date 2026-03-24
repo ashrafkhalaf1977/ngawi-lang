@@ -478,6 +478,14 @@ static void test_array_mvp(void) {
       "  return 0;\n"
       "}\n";
 
+  const char *bad_depth_src =
+      "fn main() -> int {\n"
+      "  let m: int[][] = [[1], [2]];\n"
+      "  let v: int[] = [3];\n"
+      "  m = v;\n"
+      "  return 0;\n"
+      "}\n";
+
   const char *bad_push_src =
       "fn main() -> int {\n"
       "  let b: bool[] = [true];\n"
@@ -539,6 +547,8 @@ static void test_array_mvp(void) {
          "int array with non-int element should fail");
   expect(run_program("array_bad_mixed.ngawi", bad_mixed_src, 1) != 0,
          "float array with int element should fail");
+  expect(run_program("array_bad_depth.ngawi", bad_depth_src, 1) != 0,
+         "array depth mismatch assignment should fail");
   expect(run_program("array_bad_push.ngawi", bad_push_src, 1) != 0,
          "push should enforce element type");
   expect(run_program("array_bad_nested.ngawi", bad_nested_src, 1) != 0,

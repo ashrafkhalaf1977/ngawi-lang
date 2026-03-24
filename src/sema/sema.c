@@ -39,6 +39,8 @@ typedef struct Sema {
   const FunctionDecl *current_fn;
 } Sema;
 
+static void sema_note(Sema *s, int line, int col, const char *fmt, ...);
+
 const char *type_kind_name(TypeKind t) {
   static char buf[64];
 
@@ -93,6 +95,20 @@ static TypeKind array_of_elem(TypeKind t) {
 
 static int expr_is_empty_array_literal(const Expr *e) {
   return e && e->kind == EXPR_ARRAY_LITERAL && e->as.array_lit.count == 0;
+}
+
+static int type_same_array_base(TypeKind a, TypeKind b) {
+  return type_is_array(a) && type_is_array(b) && ng_type_array_base(a) == ng_type_array_base(b);
+}
+
+static void maybe_note_array_depth_mismatch(Sema *s,
+                                            int line,
+                                            int col,
+                                            TypeKind expected,
+                                            TypeKind got) {
+  if (!type_same_array_base(expected, got)) return;
+  sema_note(s, line, col, "array depth mismatch: expected depth %d, got depth %d",
+            ng_type_array_depth(expected), ng_type_array_depth(got));
 }
 
 static int min3(int a, int b, int c) {
@@ -499,6 +515,8 @@ static TypeKind check_call(Sema *s, Expr *e) {
       sema_error(s, e->as.call.args[i]->line, e->as.call.args[i]->col,
                  "argument %zu of '%s' expects '%s', got '%s'", i + 1,
                  e->as.call.name, type_kind_name(exp), type_kind_name(got));
+      maybe_note_array_depth_mismatch(s, e->as.call.args[i]->line, e->as.call.args[i]->col, exp,
+                                      got);
     }
   }
 
@@ -729,6 +747,7 @@ static void check_stmt(Sema *s, Stmt *st) {
           sema_error(s, st->line, st->col,
                      "cannot assign '%s' to variable '%s' of type '%s'",
                      type_kind_name(init_t), st->as.var_decl.name, type_kind_name(final_t));
+          maybe_note_array_depth_mismatch(s, st->line, st->col, final_t, init_t);
         }
       }
       if (final_t == TYPE_VOID) {
@@ -767,6 +786,7 @@ static void check_stmt(Sema *s, Stmt *st) {
         sema_error(s, st->line, st->col,
                    "cannot assign '%s' to variable '%s' of type '%s'", type_kind_name(rhs),
                    st->as.assign.name, type_kind_name(v->type));
+        maybe_note_array_depth_mismatch(s, st->line, st->col, v->type, rhs);
       }
       break;
     }
@@ -811,6 +831,7 @@ static void check_stmt(Sema *s, Stmt *st) {
       if (elem_t != TYPE_VOID && vt != TYPE_VOID && !type_eq(elem_t, vt)) {
         sema_error(s, st->line, st->col, "%s assignment expects %s value, got '%s'",
                    type_kind_name(tt), type_kind_name(elem_t), type_kind_name(vt));
+        maybe_note_array_depth_mismatch(s, st->line, st->col, elem_t, vt);
       }
       break;
     }
