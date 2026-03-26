@@ -186,7 +186,56 @@ Rules:
 - `_` is wildcard arm and should appear last
 - arms after wildcard are rejected as unreachable
 - duplicate literal arms are rejected by sema
-- `bool` match without wildcard must include both `true` and `false` arms
+
+### 8.3.1 Exhaustiveness
+
+Match statements must be exhaustive:
+
+- **Bool matches:** Must include both `true` and `false` arms, OR have wildcard `_`
+- **Int matches:** Must have wildcard `_` arm (int domain is infinite)
+- **String matches:** Must have wildcard `_` arm (string domain is infinite)
+
+Valid examples:
+
+```ngawi
+match ok {
+  true => { print("yes"); }
+  false => { print("no"); }
+}
+
+match ok {
+  true => { print("yes"); }
+  _ => { print("other"); }
+}
+
+match x {
+  1 => { print("one"); }
+  _ => { print("other"); }
+}
+
+match s {
+  "hello" => { print("greeting"); }
+  _ => { print("other"); }
+}
+```
+
+Non-exhaustive (rejected):
+
+```ngawi
+match ok {
+  true => { print("yes"); }
+}
+
+match x {
+  1 => { print("one"); }
+  2 => { print("two"); }
+}
+
+match s {
+  "a" => { print("a"); }
+  "b" => { print("b"); }
+}
+```
 
 ## 9. Builtins
 

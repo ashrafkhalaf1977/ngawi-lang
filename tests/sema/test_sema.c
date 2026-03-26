@@ -409,6 +409,26 @@ static void test_match_rules(void) {
       "  return 0;\n"
       "}\n";
 
+  const char *bad_int_non_exhaustive_src =
+      "fn main() -> int {\n"
+      "  let x: int = 1;\n"
+      "  match x {\n"
+      "    1 => { print(\"one\"); }\n"
+      "    2 => { print(\"two\"); }\n"
+      "  }\n"
+      "  return 0;\n"
+      "}\n";
+
+  const char *bad_string_non_exhaustive_src =
+      "fn main() -> int {\n"
+      "  let s: string = \"x\";\n"
+      "  match s {\n"
+      "    \"a\" => { print(\"a\"); }\n"
+      "    \"b\" => { print(\"b\"); }\n"
+      "  }\n"
+      "  return 0;\n"
+      "}\n";
+
   expect(run_program("match_ok.ngawi", ok_src, 0) == 0, "valid int match should pass");
   expect(run_program("match_ok_bool.ngawi", ok_bool_src, 0) == 0,
          "valid bool match should pass");
@@ -429,6 +449,11 @@ static void test_match_rules(void) {
          "match arm after wildcard should fail");
   expect(run_program("match_bad_bool_non_exhaustive.ngawi", bad_bool_non_exhaustive_src, 1) != 0,
          "bool match without false arm or wildcard should fail");
+  expect(run_program("match_bad_int_non_exhaustive.ngawi", bad_int_non_exhaustive_src, 1) != 0,
+         "int match without wildcard should fail");
+  expect(run_program("match_bad_string_non_exhaustive.ngawi", bad_string_non_exhaustive_src,
+                     1) != 0,
+         "string match without wildcard should fail");
 }
 
 static void test_array_mvp(void) {

@@ -40,6 +40,54 @@ typedef struct Sema {
 } Sema;
 
 static void sema_note(Sema *s, int line, int col, const char *fmt, ...);
+static void sema_error(Sema *s, int line, int col, const char *fmt, ...);
+
+static int check_match_arm_duplicate(Sema *s, const MatchArm *arm, const MatchArm *arms,
+                                     size_t current_index) {
+  for (size_t j = 0; j < current_index; j++) {
+    const MatchArm *prev = &arms[j];
+    if (prev->pattern_kind != arm->pattern_kind) continue;
+
+    if (arm->pattern_kind == MATCH_PATTERN_INT && prev->int_value == arm->int_value) {
+      sema_error(s, arm->line, arm->col, "duplicate match arm value '%lld'",
+                 (long long)arm->int_value);
+      sema_note(s, prev->line, prev->col, "previous arm with same value here");
+      return 1;
+    }
+    if (arm->pattern_kind == MATCH_PATTERN_BOOL && prev->bool_value == arm->bool_value) {
+      sema_error(s, arm->line, arm->col, "duplicate match arm value '%s'",
+                 arm->bool_value ? "true" : "false");
+      sema_note(s, prev->line, prev->col, "previous arm with same value here");
+      return 1;
+    }
+    if (arm->pattern_kind == MATCH_PATTERN_STRING && prev->string_value && arm->string_value &&
+        strcmp(prev->string_value, arm->string_value) == 0) {
+      sema_error(s, arm->line, arm->col, "duplicate match arm value '%s'", arm->string_value);
+      sema_note(s, prev->line, prev->col, "previous arm with same value here");
+      return 1;
+    }
+  }
+  return 0;
+}
+
+static void check_match_exhaustiveness(Sema *s, TypeKind subject_type, int wildcard_count,
+                                       int seen_true, int seen_false, int line, int col) {
+  if (subject_type == TYPE_BOOL && wildcard_count == 0 && (!seen_true || !seen_false)) {
+    const char *missing = !seen_true ? "true" : "false";
+    sema_error(s, line, col, "non-exhaustive bool match: missing '%s' arm or wildcard '_'",
+               missing);
+  }
+
+  if (subject_type == TYPE_INT && wildcard_count == 0) {
+    sema_error(s, line, col,
+               "non-exhaustive int match: add wildcard '_' arm to handle all cases");
+  }
+
+  if (subject_type == TYPE_STRING && wildcard_count == 0) {
+    sema_error(s, line, col,
+               "non-exhaustive string match: add wildcard '_' arm to handle all cases");
+  }
+}
 
 const char *type_kind_name(TypeKind t) {
   static char buf[64];
@@ -958,27 +1006,7 @@ static void check_stmt(Sema *s, Stmt *st) {
             }
           }
 
-          for (size_t j = 0; j < i; j++) {
-            MatchArm *prev = &st->as.match_stmt.arms[j];
-            if (prev->pattern_kind != arm->pattern_kind) continue;
-
-            if (arm->pattern_kind == MATCH_PATTERN_INT && prev->int_value == arm->int_value) {
-              sema_error(s, arm->line, arm->col, "duplicate match arm value '%lld'",
-                         (long long)arm->int_value);
-              break;
-            }
-            if (arm->pattern_kind == MATCH_PATTERN_BOOL && prev->bool_value == arm->bool_value) {
-              sema_error(s, arm->line, arm->col, "duplicate match arm value '%s'",
-                         arm->bool_value ? "true" : "false");
-              break;
-            }
-            if (arm->pattern_kind == MATCH_PATTERN_STRING && prev->string_value &&
-                arm->string_value && strcmp(prev->string_value, arm->string_value) == 0) {
-              sema_error(s, arm->line, arm->col, "duplicate match arm value '%s'",
-                         arm->string_value);
-              break;
-            }
-          }
+          check_match_arm_duplicate(s, arm, st->as.match_stmt.arms, i);
         }
 
         push_scope(s);
@@ -986,11 +1014,8 @@ static void check_stmt(Sema *s, Stmt *st) {
         pop_scope(s);
       }
 
-      if (stype == TYPE_BOOL && wildcard_count == 0 && (!seen_true || !seen_false)) {
-        const char *missing = !seen_true ? "true" : "false";
-        sema_error(s, st->line, st->col,
-                   "non-exhaustive bool match: missing '%s' arm or wildcard '_'", missing);
-      }
+      check_match_exhaustiveness(s, stype, wildcard_count, seen_true, seen_false, st->line,
+                                 st->col);
       break;
     }
 
